@@ -6,6 +6,7 @@ namespace_kafka_cluster: "{{ project_name }}"
 strimzi_cluster_operator: strimzi-cluster-operator
 
 kafka_cluster: kafka-cluster
+kafka_cluster_ca_secret: "{{ kafka_cluster }}-cluster-ca-cert"
 
 kafka_topics: >
   [{"name": "topic-incident-event", "partitions": "15", "replicas": "2", "config": "{}"},

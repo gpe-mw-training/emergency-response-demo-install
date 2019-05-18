@@ -32,7 +32,7 @@ pipeline_buildconfig_template: incident-service-pipeline.yml
 application_template: incident-service.yml
 
 kafka_bootstrap_service: "{{ kafka_cluster }}-kafka-bootstrap.{{ namespace_kafka_cluster }}.svc"
-kafka_bootstrap_port: 9092
+kafka_bootstrap_port: 9093
 kafka_bootstrap_address: "{{ kafka_bootstrap_service }}:{{ kafka_bootstrap_port }}"
 kafka_groupid: incident-service
 kafka_consumer_concurrency: 5
@@ -40,6 +40,17 @@ kafka_consumer_concurrency: 5
 kafka_incident_reported_event_topic: topic-incident-event
 kafka_incident_updated_event_topic: topic-incident-event
 kafka_update_incident_command_topic: topic-incident-command
+
+kafka_user_template: kafka-user.yml
+kafka_user: incident-service
+kafka_user_secret: "{{ kafka_user }}"
+kafka_user_truststore: kafka-client-truststore.jks
+kafka_user_truststore_password: password
+kafka_user_keystore: kafka-client-keystore.jks
+kafka_user_keystore_password: password
+kafka_user_keystore_secret: "{{ application_name }}-kafka"
+kafka_user_keystore_path: /app/kafka
+kafka_user_truststore_path: /app/kafka
 
 narayana_pool_max_total: 20
 

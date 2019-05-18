@@ -37,6 +37,15 @@
   shell: "{{ openshift_cli }} scale --replicas=0 dc {{ process_viewer_application_name }} -n {{ namespace_services }}"  
 
 # uninstall kafka
+- name: delete kafka user for incident service
+  import_role:
+    name: openshift_incident_service
+    tasks_from: delete_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/incident-service"
+    work_dir_name: incident-service
+
 - name: uninstall kafka topics
   import_role:
     name: openshift_kafka_topics
@@ -110,6 +119,15 @@
     namespace: "{{ namespace_kafka_cluster }}"
     resources_dir: "{{ resources_base_dir }}/strimzi"
     work_dir_name: kafka-topics
+
+- name: create kafka user for incident service
+  import_role:
+    name: openshift_incident_service
+    tasks_from: create_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/incident-service"
+    work_dir_name: incident-service
 
 # install datagrid
 - name: install datagrid
