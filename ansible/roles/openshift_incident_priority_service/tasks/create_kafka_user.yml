@@ -34,8 +34,11 @@
 - name: write certificate to tmp file
   copy: content="{{ kafka_cluster_ca_certificate_value.stdout }}" dest="{{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt"
 
-- name: create JKS truststore
-  shell: "keytool -importcert -alias CARoot -file {{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt -keystore {{ work_dir }}/{{ kafka_user_truststore }} -storepass {{ kafka_user_truststore_password }} -noprompt"
+- name: create PKCS12 truststore with keytool
+  shell: |
+    keytool -importcert -storetype PKCS12 -file {{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt \
+    -keystore {{ work_dir }}/{{ kafka_user_truststore }} -alias CARoot \
+    -storepass {{ kafka_user_truststore_password }} -noprompt
 
 - name: get kafka user secret
   oc_secret:
@@ -73,12 +76,7 @@
 - name: create pkcs12 file from certificate and key
   shell: |
     openssl pkcs12 -export -in {{ work_dir }}/{{ kafka_user }}.crt -inkey {{ work_dir }}/{{ kafka_user }}.key \
-    -out {{ work_dir }}/{{ kafka_user }}.p12 -name {{ kafka_user }} -passout "pass:{{ kafka_user_keystore_password }}"
-
-- name: create JKS keystore
-  shell: |
-    keytool -importkeystore -deststorepass {{ kafka_user_keystore_password }} -srckeystore {{ work_dir }}/{{ kafka_user }}.p12 \
-    -srcstoretype PKCS12 -srcstorepass {{ kafka_user_keystore_password }} -alias {{ kafka_user }} -destkeystore {{ work_dir }}/{{ kafka_user_keystore }}
+    -out {{ work_dir }}/{{ kafka_user_keystore }} -name {{ kafka_user }} -passout "pass:{{ kafka_user_keystore_password }}"
 
 - name: create kafka user keystore and truststore secret
   oc_secret:

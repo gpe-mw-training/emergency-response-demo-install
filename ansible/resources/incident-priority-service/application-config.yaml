@@ -5,7 +5,9 @@ kafka:
   group-id: {{ kafka_groupid }}
   topic-incident-assignment-event: {{ kafka_incident_assignment_event_topic }}
   security-protocol: SSL
+  ssl-keystore-type: {{ kafka_user_keystore_type }}
   ssl-keystore-location: {{ kafka_user_keystore_path }}/{{ kafka_user_keystore }}
   ssl-keystore-password: {{ kafka_user_keystore_password }}
+  ssl-truststore-type: {{ kafka_user_truststore_type }}
   ssl-truststore-location: {{ kafka_user_truststore_path }}/{{ kafka_user_truststore }}
   ssl-truststore-password: {{ kafka_user_truststore_password }}
