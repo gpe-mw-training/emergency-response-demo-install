@@ -46,6 +46,15 @@
     resources_dir: "{{ resources_base_dir }}/incident-service"
     work_dir_name: incident-service
 
+- name: delete kafka user for incident priority service
+  import_role:
+    name: openshift_incident_priority_service
+    tasks_from: delete_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/incident-priority-service"
+    work_dir_name: incident-priority-service
+
 - name: uninstall kafka topics
   import_role:
     name: openshift_kafka_topics
@@ -128,6 +137,15 @@
     namespace: "{{ namespace_services }}"
     resources_dir: "{{ resources_base_dir }}/incident-service"
     work_dir_name: incident-service
+
+- name: create kafka user for incident priority service
+  import_role:
+    name: openshift_incident_priority_service
+    tasks_from: create_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/incident-priority-service"
+    work_dir_name: incident-priority-service
 
 # install datagrid
 - name: install datagrid

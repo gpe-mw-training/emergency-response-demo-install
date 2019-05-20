@@ -87,3 +87,5 @@
     name: "{{ service_account }}-view"
     namespace: "{{ namespace }}"
     kind: rolebinding
+
+- include_tasks: delete_kafka_user.yml
