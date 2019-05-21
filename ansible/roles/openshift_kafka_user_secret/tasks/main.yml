@@ -1,0 +1,77 @@
+---
+
+- name: get kafka cluster ca certificate
+  oc_secret:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ kafka_cluster_ca_secret }}"
+    namespace: "{{ namespace_kafka_cluster }}"
+    decode: true
+  register: kafka_cluster_ca_secret_value
+
+- name: extract certificate from {{ kafka_cluster_ca_secret }}
+  shell: "echo \"{{ kafka_cluster_ca_secret_value|json_query(json_query) }}\""
+  vars: 
+    json_query: results.decoded."ca.crt"
+  register: kafka_cluster_ca_certificate_value
+  changed_when: false
+
+- name: write certificate to tmp file
+  copy: content="{{ kafka_cluster_ca_certificate_value.stdout }}" dest="{{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt"
+
+- name: create PKCS12 truststore with keytool
+  shell: |
+    keytool -importcert -storetype PKCS12 -file {{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt \
+    -keystore {{ work_dir }}/{{ user_truststore }} -alias CARoot \
+    -storepass {{ user_truststore_password }} -noprompt
+
+- name: get kafka user secret {{ user_secret }}
+  oc_secret:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ user_secret }}"
+    namespace: "{{ namespace_kafka_cluster }}"
+    decode: true
+  register: user_secret_value
+  until: user_secret_value.results.exists == true
+  retries: 10
+  delay: 10
+  changed_when: false
+
+- name: extract certificate from {{ user_secret }}
+  shell: "echo \"{{ user_secret_value|json_query(json_query) }}\""
+  vars: 
+    json_query: results.decoded."user.crt"
+  register: user_certificate_value
+  changed_when: false
+
+- name: write certificate to tmp file
+  copy: content="{{ user_certificate_value.stdout }}" dest="{{ work_dir }}/user.crt"
+
+- name: extract key from {{ user_secret }}
+  shell: "echo \"{{ user_secret_value|json_query(json_query) }}\""
+  vars: 
+    json_query: results.decoded."user.key"
+  register: user_key_value
+  changed_when: false
+
+- name: write key to tmp file
+  copy: content="{{ user_key_value.stdout }}" dest="{{ work_dir }}/user.key"
+
+- name: create pkcs12 file from certificate and key
+  shell: |
+    openssl pkcs12 -export -in {{ work_dir }}/user.crt -inkey {{ work_dir }}/user.key \
+    -out {{ work_dir }}/{{ user_keystore }} -name kafka-user -passout "pass:{{ user_keystore_password }}"
+
+- name: create kafka user keystore and truststore secret
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: "{{ user_keystore_secret }}"
+    type: generic
+    files:
+      - name: "{{ user_truststore }}"
+        path: "{{ work_dir }}/{{ user_truststore }}"
+      - name: "{{ user_keystore }}"
+        path: "{{ work_dir }}/{{ user_keystore }}"

@@ -15,78 +15,12 @@
     files:
       - "{{ work_dir }}/{{ kafka_user_template }}"
 
-- name: get kafka cluster ca certificate
-  oc_secret:
-    state: list
-    oc_binary: "{{ openshift_cli }}"
-    name: "{{ kafka_cluster_ca_secret }}"
-    namespace: "{{ namespace_kafka_cluster }}"
-    decode: true
-  register: kafka_cluster_ca_secret_value
-
-- name: extract certificate from {{ kafka_cluster_ca_secret }}
-  shell: "echo \"{{ kafka_cluster_ca_secret_value|json_query(json_query) }}\""
-  vars: 
-    json_query: results.decoded."ca.crt"
-  register: kafka_cluster_ca_certificate_value
-  changed_when: false
-
-- name: write certificate to tmp file
-  copy: content="{{ kafka_cluster_ca_certificate_value.stdout }}" dest="{{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt"
-
-- name: create PKCS12 truststore with keytool
-  shell: |
-    keytool -importcert -storetype PKCS12 -file {{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt \
-    -keystore {{ work_dir }}/{{ kafka_user_truststore }} -alias CARoot \
-    -storepass {{ kafka_user_truststore_password }} -noprompt
-
-- name: get kafka user secret
-  oc_secret:
-    state: list
-    oc_binary: "{{ openshift_cli }}"
-    name: "{{ kafka_user_secret }}"
-    namespace: "{{ namespace_kafka_cluster }}"
-    decode: true
-  register: kafka_user_secret_value
-  until: kafka_user_secret_value.results.exists == true
-  retries: 10
-  delay: 10
-  changed_when: false
-
-- name: extract certificate from {{ kafka_user_secret }}
-  shell: "echo \"{{ kafka_user_secret_value|json_query(json_query) }}\""
-  vars: 
-    json_query: results.decoded."user.crt"
-  register: kafka_user_certificate_value
-  changed_when: false
-
-- name: write certificate to tmp file
-  copy: content="{{ kafka_user_certificate_value.stdout }}" dest="{{ work_dir }}/{{ kafka_user }}.crt"
-
-- name: extract key from {{ kafka_user_secret }}
-  shell: "echo \"{{ kafka_user_secret_value|json_query(json_query) }}\""
-  vars: 
-    json_query: results.decoded."user.key"
-  register: kafka_user_key_value
-  changed_when: false
-
-- name: write key to tmp file
-  copy: content="{{ kafka_user_key_value.stdout }}" dest="{{ work_dir }}/{{ kafka_user }}.key"
-
-- name: create pkcs12 file from certificate and key
-  shell: |
-    openssl pkcs12 -export -in {{ work_dir }}/{{ kafka_user }}.crt -inkey {{ work_dir }}/{{ kafka_user }}.key \
-    -out {{ work_dir }}/{{ kafka_user_keystore }} -name {{ kafka_user }} -passout "pass:{{ kafka_user_keystore_password }}"
-
-- name: create kafka user keystore and truststore secret
-  oc_secret:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    namespace: "{{ namespace }}"
-    name: "{{ kafka_user_keystore_secret }}"
-    type: generic
-    files:
-      - name: "{{ kafka_user_truststore }}"
-        path: "{{ work_dir }}/{{ kafka_user_truststore }}"
-      - name: "{{ kafka_user_keystore }}"
-        path: "{{ work_dir }}/{{ kafka_user_keystore }}"
+- import_role:
+    name: openshift_kafka_user_secret
+  vars:
+    user_secret: "{{ kafka_user_secret }}"
+    user_truststore: "{{ kafka_user_truststore }}"
+    user_truststore_password: "{{ kafka_user_truststore_password }}"
+    user_keystore: "{{ kafka_user_keystore }}"
+    user_keystore_password: "{{ kafka_user_keystore_password }}"
+    user_keystore_secret: "{{ kafka_user_keystore_secret }}"
