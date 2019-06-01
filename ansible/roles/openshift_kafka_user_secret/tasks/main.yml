@@ -12,7 +12,7 @@
 - name: extract certificate from {{ kafka_cluster_ca_secret }}
   shell: "echo \"{{ kafka_cluster_ca_secret_value|json_query(json_query) }}\""
   vars: 
-    json_query: results.decoded."ca.crt"
+    json_query: ansible_module_results.decoded."ca.crt"
   register: kafka_cluster_ca_certificate_value
   changed_when: false
 
@@ -33,7 +33,7 @@
     namespace: "{{ namespace_kafka_cluster }}"
     decode: true
   register: user_secret_value
-  until: user_secret_value.results.exists == true
+  until: user_secret_value.ansible_module_results.exists == true
   retries: 10
   delay: 10
   changed_when: false
@@ -41,7 +41,7 @@
 - name: extract certificate from {{ user_secret }}
   shell: "echo \"{{ user_secret_value|json_query(json_query) }}\""
   vars: 
-    json_query: results.decoded."user.crt"
+    json_query: ansible_module_results.decoded."user.crt"
   register: user_certificate_value
   changed_when: false
 
@@ -51,7 +51,7 @@
 - name: extract key from {{ user_secret }}
   shell: "echo \"{{ user_secret_value|json_query(json_query) }}\""
   vars: 
-    json_query: results.decoded."user.key"
+    json_query: ansible_module_results.decoded."user.key"
   register: user_key_value
   changed_when: false
 
