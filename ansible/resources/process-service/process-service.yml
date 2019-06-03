@@ -102,6 +102,8 @@ items:
               mountPath: /app/config
             - mountPath: /app/logging
               name: logging
+            - mountPath: {{ kafka_user_keystore_path }}
+              name: kafka-keystore
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -116,6 +118,9 @@ items:
         - configMap:
             name: {{ logging_configmap }}
           name: logging
+        - secret:
+            secretName: {{ kafka_user_keystore_secret }}
+          name: kafka-keystore 
     triggers:
       - type: ConfigChange
       - imageChangeParams:

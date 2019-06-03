@@ -72,6 +72,8 @@
     namespace: "{{ namespace }}"
     rolebinding_name: "{{ service_account }}-view"
 
+- include_tasks: create_kafka_user.yml
+
 - import_tasks: deploy_from_source.yml
   when: deploy_from is defined and deploy_from == "source"
 

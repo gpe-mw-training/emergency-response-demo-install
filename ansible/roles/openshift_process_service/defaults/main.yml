@@ -11,10 +11,23 @@ resources_requests_cpu: 250m
 resources_requests_memory: 500Mi
 
 kafka_bootstrap_service: "{{ kafka_cluster }}-kafka-bootstrap.{{ namespace_kafka_cluster }}.svc"
-kafka_bootstrap_port: 9092
+kafka_bootstrap_port: 9093
 kafka_bootstrap_address: "{{ kafka_bootstrap_service }}:{{ kafka_bootstrap_port }}"
 kafka_groupid: process-service
 kafka_consumer_concurrency: 5
+
+kafka_user_template: kafka-user.yml
+kafka_user: process-service
+kafka_user_secret: "{{ kafka_user }}"
+kafka_user_truststore_type: PKCS12
+kafka_user_truststore: kafka-client-truststore.p12
+kafka_user_truststore_password: password
+kafka_user_keystore_type: PKCS12
+kafka_user_keystore: kafka-client-keystore.p12
+kafka_user_keystore_password: password
+kafka_user_keystore_secret: "{{ application_name }}-kafka"
+kafka_user_keystore_path: /app/kafka
+kafka_user_truststore_path: /app/kafka
 
 kafka_incident_reported_event_topic: topic-incident-event
 kafka_create_mission_command_topic: topic-mission-command
