@@ -1,0 +1,42 @@
+apiVersion: kafka.strimzi.io/v1alpha1
+kind: KafkaUser
+metadata:
+  name: {{ kafka_user }}
+  labels:
+    strimzi.io/cluster: {{ kafka_cluster }}
+spec:
+  authentication:
+    type: tls
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: {{ kafka_responder_update_topic }}
+          patternType: literal
+        operation: Write
+        host: "*"
+      - resource:
+          type: topic
+          name: {{ kafka_responder_update_topic }}
+          patternType: literal
+        operation: Describe
+        host: "*"
+      - resource:
+          type: topic
+          name: {{ kafka_mission_event_topic }}
+          patternType: literal
+        operation: Read
+        host: "*"
+      - resource:
+          type: topic
+          name: {{ kafka_mission_event_topic }}
+          patternType: literal
+        operation: Describe
+        host: "*"
+      - resource:
+          type: group
+          name: {{ kafka_groupid }}
+          patternType: literal
+        operation: Read
+        host: "*"

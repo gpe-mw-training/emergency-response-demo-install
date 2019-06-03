@@ -82,6 +82,15 @@
     resources_dir: "{{ resources_base_dir }}/mission-service"
     work_dir_name: mission-service
 
+- name: delete kafka user for responder simulator service
+  import_role:
+    name: openshift_responder_simulator_service
+    tasks_from: delete_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/responder-simulator-service"
+    work_dir_name: responder-simulator-service
+
 - name: uninstall kafka topics
   import_role:
     name: openshift_kafka_topics
@@ -200,6 +209,15 @@
     namespace: "{{ namespace_services }}"
     resources_dir: "{{ resources_base_dir }}/mission-service"
     work_dir_name: mission-service
+
+- name: create kafka user for responder simulator service
+  import_role:
+    name: openshift_responder_simulator_service
+    tasks_from: create_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/responder-simulator-service"
+    work_dir_name: responder-simulator-service
 
 # install datagrid
 - name: install datagrid

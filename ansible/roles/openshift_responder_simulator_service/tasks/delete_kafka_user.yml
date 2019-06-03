@@ -1,0 +1,17 @@
+---
+
+- name: delete kafka user
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    namespace: "{{ namespace_kafka_cluster }}"
+    name: "{{ kafka_user }}"
+    kind: kafkauser
+
+- name: delete kafka user keystore and truststore secret
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    namespace: "{{ namespace }}"
+    name: "{{ kafka_ssl_keystore_secret }}"
+    type: generic

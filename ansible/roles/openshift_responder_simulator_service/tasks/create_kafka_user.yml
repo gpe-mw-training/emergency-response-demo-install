@@ -1,0 +1,26 @@
+---
+
+- name: copy kafka user template
+  template:
+    src: "{{ resources_dir }}/{{ kafka_user_template }}"
+    dest: "{{ work_dir }}/{{ kafka_user_template }}"
+
+- name: create kafka user
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace_kafka_cluster }}"
+    name: "{{ kafka_user }}"
+    kind: kafkauser
+    files:
+      - "{{ work_dir }}/{{ kafka_user_template }}"
+
+- import_role:
+    name: openshift_kafka_user_secret
+  vars:
+    user_secret: "{{ kafka_user_secret }}"
+    user_truststore: "{{ kafka_ssl_truststore }}"
+    user_truststore_password: "{{ kafka_ssl_truststore_password }}"
+    user_keystore: "{{ kafka_ssl_keystore }}"
+    user_keystore_password: "{{ kafka_ssl_keystore_password }}"
+    user_keystore_secret: "{{ kafka_ssl_keystore_secret }}"

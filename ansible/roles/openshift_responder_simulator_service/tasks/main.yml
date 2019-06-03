@@ -31,6 +31,8 @@
     from_file:
       dir: "{{ work_dir }}/app-config.properties"
 
+- include_tasks: create_kafka_user.yml
+
 - import_tasks: deploy_from_source.yml
   when: deploy_from is defined and deploy_from == "source"
 

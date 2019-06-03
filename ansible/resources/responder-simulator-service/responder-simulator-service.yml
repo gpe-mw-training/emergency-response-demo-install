@@ -127,6 +127,8 @@ items:
             volumeMounts:
             - mountPath: /deployments/config
               name: config
+            - mountPath: /app/kafka
+              name: kafka-keystore
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -142,6 +144,9 @@ items:
                 path: {{ application_configmap_key }}
             name: {{ application_configmap }}
           name: config
+        - secret:
+            secretName: {{ kafka_ssl_keystore_secret }}
+          name: kafka-keystore
     triggers:
       - type: ConfigChange
       - imageChangeParams:
