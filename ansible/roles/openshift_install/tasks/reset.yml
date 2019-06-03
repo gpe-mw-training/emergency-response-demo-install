@@ -73,6 +73,15 @@
     resources_dir: "{{ resources_base_dir }}/process-service"
     work_dir_name: process-service
 
+- name: delete kafka user for mission service
+  import_role:
+    name: openshift_mission_service
+    tasks_from: delete_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/mission-service"
+    work_dir_name: mission-service
+
 - name: uninstall kafka topics
   import_role:
     name: openshift_kafka_topics
@@ -182,6 +191,15 @@
     namespace: "{{ namespace_services }}"
     resources_dir: "{{ resources_base_dir }}/process-service"
     work_dir_name: process-service
+
+- name: create kafka user for mission service
+  import_role:
+    name: openshift_mission_service
+    tasks_from: create_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/mission-service"
+    work_dir_name: mission-service
 
 # install datagrid
 - name: install datagrid
