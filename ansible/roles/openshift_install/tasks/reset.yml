@@ -91,6 +91,15 @@
     resources_dir: "{{ resources_base_dir }}/responder-simulator-service"
     work_dir_name: responder-simulator-service
 
+- name: delete kafka user for emergency console
+  import_role:
+    name: openshift_emergency_console
+    tasks_from: delete_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/emergency-console"
+    work_dir_name: emergency-console
+
 - name: uninstall kafka topics
   import_role:
     name: openshift_kafka_topics
@@ -218,6 +227,15 @@
     namespace: "{{ namespace_services }}"
     resources_dir: "{{ resources_base_dir }}/responder-simulator-service"
     work_dir_name: responder-simulator-service
+
+- name: create kafka user for emergency console
+  import_role:
+    name: openshift_emergency_console
+    tasks_from: create_kafka_user
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/emergency-console"
+    work_dir_name: emergency-console
 
 # install datagrid
 - name: install datagrid

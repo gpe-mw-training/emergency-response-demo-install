@@ -17,13 +17,14 @@
   changed_when: false
 
 - name: write certificate to tmp file
-  copy: content="{{ kafka_cluster_ca_certificate_value.stdout }}" dest="{{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt"
+  copy: content="{{ kafka_cluster_ca_certificate_value.stdout }}" dest="{{ work_dir }}/ca.crt"
 
 - name: create PKCS12 truststore with keytool
   shell: |
-    keytool -importcert -storetype PKCS12 -file {{ work_dir }}/{{ kafka_cluster_ca_secret }}.crt \
+    keytool -importcert -storetype PKCS12 -file {{ work_dir }}/ca.crt \
     -keystore {{ work_dir }}/{{ user_truststore }} -alias CARoot \
     -storepass {{ user_truststore_password }} -noprompt
+  when: create_pkcs12_secret is not defined or create_pkcs12_secret|bool == true
 
 - name: get kafka user secret {{ user_secret }}
   oc_secret:
@@ -62,6 +63,7 @@
   shell: |
     openssl pkcs12 -export -in {{ work_dir }}/user.crt -inkey {{ work_dir }}/user.key \
     -out {{ work_dir }}/{{ user_keystore }} -name kafka-user -passout "pass:{{ user_keystore_password }}"
+  when: create_pkcs12_secret is not defined or create_pkcs12_secret|bool == true
 
 - name: create kafka user keystore and truststore secret
   oc_secret:
@@ -75,3 +77,20 @@
         path: "{{ work_dir }}/{{ user_truststore }}"
       - name: "{{ user_keystore }}"
         path: "{{ work_dir }}/{{ user_keystore }}"
+  when: create_pkcs12_secret is not defined or create_pkcs12_secret|bool == true
+
+- name: create kafka user certs secret
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: "{{ user_keystore_secret }}"
+    type: generic
+    files:
+      - name: "user.key"
+        path: "{{ work_dir }}/user.key"
+      - name: "user.crt"
+        path: "{{ work_dir }}/user.crt"
+      - name: "ca.crt"
+        path: "{{ work_dir }}/ca.crt"
+  when: create_pkcs12_secret is defined and create_pkcs12_secret|bool == false

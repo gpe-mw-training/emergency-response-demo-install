@@ -24,3 +24,4 @@
     user_keystore: "{{ kafka_user_keystore }}"
     user_keystore_password: "{{ kafka_user_keystore_password }}"
     user_keystore_secret: "{{ kafka_user_keystore_secret }}"
+    create_pkcs12_secret: true

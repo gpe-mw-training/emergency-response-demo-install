@@ -119,6 +119,11 @@ items:
                 configMapKeyRef:
                   key: KAFKA_TOPIC
                   name: {{ emergency_console_config_configmap }}
+            - name: KAFKA_CERTS
+              valueFrom:
+                configMapKeyRef:
+                  key: KAFKA_CERTS
+                  name: {{ emergency_console_config_configmap }}
             - name: INCIDENT
               valueFrom:
                 configMapKeyRef:
@@ -179,6 +184,10 @@ items:
               privileged: false
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
+            volumeMounts:
+              - mountPath: {{ kafka_user_certs_path }}
+                name: kafka-certs
+                readOnly: true
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -186,6 +195,11 @@ items:
         serviceAccount: {{ service_account }}
         serviceAccountName: {{ service_account }}
         terminationGracePeriodSeconds: 30
+        volumes:
+          - name: kafka-certs
+            secret:
+              defaultMode: 420
+              secretName: {{ kafka_user_certs_secret }}
     triggers:
       - type: ConfigChange
       - imageChangeParams:
