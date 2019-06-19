@@ -44,5 +44,11 @@ incident_priority_service_host: "{{ application_name }}.{{ istio_gateway_subdoma
 istio_virtualservice: "{{ application_name }}-virtualservice"
 istio_virtualservice_template: incident-priority-service-virtualservice.yml
 
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: incident-priority-service-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: incident-priority-service-mtls-policy.yml
+
 istio_gateway_route: "{{ application_name }}-gateway"
 istio_gateway_route_template: incident-priority-service-gateway-route.yml
