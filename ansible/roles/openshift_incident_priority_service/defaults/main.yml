@@ -39,3 +39,10 @@ logging_style: dev
 
 prometheus_endpoint_path: "/metrics"
 prometheus_endpoint_port: 8080
+
+incident_priority_service_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: incident-priority-service-virtualservice.yml
+
+istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: incident-priority-service-gateway-route.yml
