@@ -47,3 +47,9 @@ prometheus_endpoint_port: 8080
 istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
 
 istio_mtls_policy: "{{ application_name }}-strict-mtls"
+
+incident_service_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+
+istio_virtualservice: "{{ application_name }}-virtualservice"
+
+istio_gateway_route: "{{ application_name }}-gateway"
