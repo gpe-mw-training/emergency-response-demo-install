@@ -43,3 +43,7 @@ logging_style: dev
 
 prometheus_endpoint_path: "/actuator/prometheus"
 prometheus_endpoint_port: 8080
+
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
