@@ -45,11 +45,15 @@ prometheus_endpoint_path: "/actuator/prometheus"
 prometheus_endpoint_port: 8080
 
 istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: incident-service-client-mtls-destinationrule.yml
 
 istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: incident-service-mtls-policy.yml
 
 incident_service_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
 
 istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: incident-service-virtualservice.yml
 
 istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: incident-service-gateway-route.yml

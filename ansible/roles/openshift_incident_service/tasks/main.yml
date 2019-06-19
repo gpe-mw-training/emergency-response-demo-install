@@ -169,3 +169,5 @@
     files:
       - "{{ work_dir }}/{{ application_template }}"
   when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+
+- include_tasks: istio.yml

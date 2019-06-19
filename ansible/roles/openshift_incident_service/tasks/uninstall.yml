@@ -93,3 +93,5 @@
     name: "{{ service_account }}-view"
     namespace: "{{ namespace }}"
     kind: rolebinding
+
+- include_tasks: istio_uninstall.yml
