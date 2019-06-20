@@ -46,6 +46,9 @@ items:
         labels:
           group: erd-services
           app: {{ application_name }}
+        annotations:
+          sidecar.istio.io/inject: "true"
+          sidecar.istio.io/rewriteAppHTTPProbers: "true"
       spec:
         containers:
           - env:
