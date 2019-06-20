@@ -68,6 +68,12 @@
     name: "{{ service_account }}"
     namespace: "{{ namespace }}"
 
+- name: add scc privileged to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user privileged -z {{ service_account }} -n {{ namespace }}"
+
+- name: add scc anyuid to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ namespace }}"
+
 - name: give cluster view privileges to {{ service_account }} service account
   oc_adm_policy_user:
     state: present
