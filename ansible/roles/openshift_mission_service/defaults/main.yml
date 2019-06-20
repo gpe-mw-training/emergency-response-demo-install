@@ -44,3 +44,10 @@ datagrid_port: 11222
 map_token: ""
 
 logging_style: dev
+
+mission_service_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: mission-service-virtualservice.yml
+
+istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: mission-service-gateway-route.yml

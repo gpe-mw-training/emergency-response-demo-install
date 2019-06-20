@@ -1,0 +1,31 @@
+---
+
+- name: copy virtualservice template
+  template:
+    src: "{{ resources_dir }}/{{ istio_virtualservice_template }}"
+    dest: "{{ work_dir }}/{{ istio_virtualservice_template }}"
+
+- name: create virtualservice
+  oc_obj:
+    state: present
+    kind: virtualservice
+    name: "{{ istio_virtualservice }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ istio_virtualservice_template }}"
+
+- name: copy gateway route template
+  template:
+    src: "{{ resources_dir }}/{{ istio_gateway_route_template }}"
+    dest: "{{ work_dir }}/{{ istio_gateway_route_template }}"
+
+- name: create gateway route
+  oc_obj:
+    state: present
+    kind: Route
+    name: "{{ istio_gateway_route }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace_istio }}"
+    files:
+      - "{{ work_dir }}/{{ istio_gateway_route_template }}"
