@@ -40,3 +40,10 @@ responder_service_port: 8080
 responder_service_get_responder_path: "/responder/"
 
 logging_style: dev
+
+responder_simulator_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: responder-simulator-virtualservice.yml
+
+istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: responder-simulator-gateway-route.yml
