@@ -88,3 +88,8 @@
     namespace: "{{ namespace }}"
     kind: rolebinding
 
+- name: remove scc privileged from {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy remove-scc-from-user privileged -z {{ service_account }} -n {{ namespace }}"
+
+- name: remove scc anyuid from {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy remove-scc-from-user anyuid -z {{ service_account }} -n {{ namespace }}"
