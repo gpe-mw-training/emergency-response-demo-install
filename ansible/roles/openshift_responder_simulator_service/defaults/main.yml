@@ -47,3 +47,9 @@ istio_virtualservice_template: responder-simulator-virtualservice.yml
 
 istio_gateway_route: "{{ application_name }}-gateway"
 istio_gateway_route_template: responder-simulator-gateway-route.yml
+
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: responder-simulator-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: responder-simulator-mtls-policy.yml
