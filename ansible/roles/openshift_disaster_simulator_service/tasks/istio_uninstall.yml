@@ -1,0 +1,17 @@
+---
+
+- name: delete virtualservice
+  oc_obj:
+    state: absent
+    kind: virtualservice
+    name: "{{ istio_virtualservice }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+
+- name: delete gateway route
+  oc_obj:
+    state: absent
+    kind: Route
+    name: "{{ istio_gateway_route }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace_istio }}"

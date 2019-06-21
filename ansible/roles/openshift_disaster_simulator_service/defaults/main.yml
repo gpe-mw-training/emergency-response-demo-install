@@ -39,3 +39,11 @@ kafka_mission_event_topic: topic-mission-event
 kafka_responder_update_topic: topic-responder-location-update
 
 logging_style: dev
+
+disaster_simulator_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+
+istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: disaster-simulator-virtualservice.yml
+
+istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: disaster-simulator-gateway-route.yml
