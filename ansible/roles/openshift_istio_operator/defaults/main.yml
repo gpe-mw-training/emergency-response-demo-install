@@ -1,0 +1,9 @@
+---
+
+istio_operator_image: registry.redhat.io/openshift-istio-tech-preview/istio-operator-rhel8:0.11.1
+
+istio_operator_service_account: istio-operator
+
+istio_operator_template: servicemesh-operator.yml
+
+istio_operator_deployment: istio-operator

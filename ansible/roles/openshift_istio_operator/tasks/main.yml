@@ -1,0 +1,34 @@
+---
+
+- name: copy operator template
+  template:
+    src: "{{ resources_dir }}/{{ istio_operator_template }}"
+    dest: "{{ work_dir }}/{{ istio_operator_template }}"
+
+- name: check if istio operator is deployed
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    namespace: "{{ namespace }}"
+    name: "{{ istio_operator_deployment }}"
+    kind: deployment
+  register: result
+
+- name: deploy istio operator
+  oc_list:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ istio_operator_template }}"
+  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+
+- name: wait until istio operator is up and running
+  shell: "{{ openshift_cli }} get deployment {{ istio_operator_deployment }} -o template --template={{ json_template }} -n {{ namespace }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 30
+  delay: 10
+  changed_when: false

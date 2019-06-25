@@ -1,0 +1,18 @@
+---
+
+- name: copy operator template
+  template:
+    src: "{{ resources_dir }}/{{ istio_operator_template }}"
+    dest: "{{ work_dir }}/{{ istio_operator_template }}"
+
+- name: delete istio operator # TODO: move to python module
+  shell: "{{ openshift_cli }} delete -f {{ work_dir }}/{{ istio_operator_template }} -n {{ namespace }}"
+
+- name: delete project
+  oc_project:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ namespace }}"
+  when: >
+    uninstall_delete_project is defined and
+    uninstall_delete_project|bool == True
