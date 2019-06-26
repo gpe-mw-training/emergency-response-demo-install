@@ -1,0 +1,24 @@
+---
+
+- name: copy controlplane template
+  template:
+    src: "{{ resources_dir }}/{{ service_mesh_controlplane_template }}"
+    dest: "{{ work_dir }}/{{ service_mesh_controlplane_template }}"
+
+- name: check if istio controlplane is deployed
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    namespace: "{{ namespace }}"
+    name: "{{ service_mesh_controlplane_name }}"
+    kind: servicemeshcontrolplane
+  register: result
+
+- name: deploy istio controlplane
+  oc_list:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ service_mesh_controlplane_template }}"
+  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""

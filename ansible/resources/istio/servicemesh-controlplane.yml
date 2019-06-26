@@ -1,0 +1,85 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshControlPlane
+metadata:
+  name: {{ service_mesh_controlplane_name }}
+spec:
+  # NOTE, if you remove all children from an element, you should remove the
+  # element too.  An empty element is interpreted as null and will override all
+  # default values (i.e. no values will be specified for that element, not even
+  # the defaults baked into the chart values.yaml).
+  istio:
+    global:
+      # the following lines enable tls across the control and data planes
+      hub: {{ controlplane_hub }}
+      tag: {{ controlplane_tag }}
+      controlPlaneSecurityEnabled: {{ controlplane_security_enabled }}
+      mtls: 
+        enabled: {{ controlplane_mtls_enabled }}
+      disablePolicyChecks: {{ controlplane_disable_policy_checks }}
+
+      proxy:
+        # constrain resources for use in smaller environments
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 128Mi
+
+      proxy_init:
+        image: {{ controlplane_proxy_init_image }}
+
+    gateways:
+      istio-egressgateway:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+      istio-ingressgateway:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+        # set to true to enable IOR
+        ior_enabled: {{ istio_ingressgateway_ior_enabled }}
+
+    mixer:
+      policy:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+
+      telemetry:
+        # disable autoscaling for use in smaller environments
+        autoscaleEnabled: false
+        # constrain resources for use in smaller environments
+        resources:
+          requests:
+            cpu: 100m
+            memory: 1G
+          limits:
+            cpu: 500m
+            memory: 4G
+
+    pilot:
+      # disable autoscaling for use in smaller environments
+      autoscaleEnabled: false
+      # increase random sampling rate for development/testing
+      traceSampling: 100.0
+      resources:
+        limits:
+          cpu: 500m
+          memory: 3G
+
+    kiali:
+      # change to false to disable kiali
+      enabled: {{ kiali_enabled }}
+    
+      # to use oauth, remove the following 'dashboard' section (note, oauth is broken on OCP 4.0 with kiali 0.16.2)
+      # create a secret for accessing kiali dashboard with the following credentials
+      dashboard:
+        user: {{ kiali_dashboard_user }}
+        passphrase: {{ kiali_dashboard_password }}
+
+    tracing:
+      # change to false to disable tracing (i.e. jaeger)
+      enabled: {{ tracing_enabled }}
+
+    threescale:
+      enabled: {{ threescale_enabled }}
