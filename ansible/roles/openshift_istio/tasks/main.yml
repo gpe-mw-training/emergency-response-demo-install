@@ -5,6 +5,16 @@
     src: "{{ resources_dir }}/{{ service_mesh_controlplane_template }}"
     dest: "{{ work_dir }}/{{ service_mesh_controlplane_template }}"
 
+- name: create ingress gateway secret
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: istio-ingressgateway-certs
+    type: tls
+    cert: "{{ istio_ingress_gateway_certificate }}"
+    key: "{{ istio_ingress_gateway_key }}"
+
 - name: check if istio controlplane is deployed
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
