@@ -1,0 +1,21 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ istio_virtualservice }}
+spec:
+  hosts:
+  - {{ process_viewer_host }}
+  gateways:
+  - {{ istio_gateway }}.{{ namespace_istio }}.svc.cluster.local
+  http:
+  - match:
+    - uri:
+        prefix: /image
+    - uri:
+        prefix: /data
+    route:
+    - destination:
+        port:
+          number: 8080
+        host: {{ application_name }}

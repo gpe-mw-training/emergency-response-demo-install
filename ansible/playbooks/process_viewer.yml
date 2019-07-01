@@ -8,6 +8,7 @@
   vars_files:
     - group_vars/services.yml
     - group_vars/tools.yml
+    - group_vars/istio.yml
 
   tasks:
     - set_fact:
