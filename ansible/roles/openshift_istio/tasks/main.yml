@@ -32,3 +32,5 @@
     files:
       - "{{ work_dir }}/{{ service_mesh_controlplane_template }}"
   when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+
+# TODO: wait until service-mesh is completely installed an up
