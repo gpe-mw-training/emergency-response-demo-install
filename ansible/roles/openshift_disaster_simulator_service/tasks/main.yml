@@ -17,6 +17,12 @@
     namespace: "{{ namespace }}"
     rolebinding_name: "{{ service_account }}-view"
 
+- name: add scc privileged to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user privileged -z {{ service_account }} -n {{ namespace }}"
+
+- name: add scc anyuid to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ namespace }}"
+
 - name: copy {{ application_configmap }} application properties
   template:
     src: "{{ resources_dir }}/app-config.properties"
