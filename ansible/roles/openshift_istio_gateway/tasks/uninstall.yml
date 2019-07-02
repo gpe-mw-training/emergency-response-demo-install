@@ -1,0 +1,9 @@
+---
+
+- name: delete gateway
+  oc_obj:
+    state: absent
+    kind: Gateway
+    name: "{{ istio_gateway }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"

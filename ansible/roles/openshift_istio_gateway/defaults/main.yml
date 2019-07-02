@@ -1,0 +1,3 @@
+---
+
+istio_gateway_template: wildcard-gateway.yml

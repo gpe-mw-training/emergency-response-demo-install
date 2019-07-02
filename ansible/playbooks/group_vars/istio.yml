@@ -2,3 +2,12 @@
 
 namespace_istio_operator: istio-operator
 namespace_istio: istio-system
+
+istio_ingress_service: istio-ingressgateway
+istio_ingress_service_http_port: http2
+istio_ingress_service_https_port: https
+istio_ingress_service_selector: ingressgateway
+
+istio_gateway_subdomain: "erd"
+istio_gateway_host: "*.{{ istio_gateway_subdomain }}"
+istio_gateway: "erd-wildcard-gateway"

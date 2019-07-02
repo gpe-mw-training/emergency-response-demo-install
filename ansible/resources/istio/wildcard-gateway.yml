@@ -1,0 +1,19 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ istio_gateway }}
+spec:
+  selector:
+    istio: {{ istio_ingress_service_selector }} # use istio default controller
+  servers:
+  - port:
+      number: 443
+      name: {{ istio_ingress_service_https_port }}
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      privateKey: /etc/istio/ingressgateway-certs/tls.key
+      serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
+    hosts:
+    - "{{ istio_gateway_host }}.{{ ocp_domain }}"

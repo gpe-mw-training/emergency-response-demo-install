@@ -1,0 +1,16 @@
+---
+
+- name: copy gateway template
+  template:
+    src: "{{ resources_dir }}/{{ istio_gateway_template }}"
+    dest: "{{ work_dir }}/{{ istio_gateway_template }}"
+
+- name: create gateway
+  oc_obj:
+    state: present
+    kind: Gateway
+    name: "{{ istio_gateway }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ istio_gateway_template }}"
