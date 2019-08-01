@@ -53,6 +53,69 @@ spec:
   subresources:
     status: {}
   version: v1
+  additionalPrinterColumns:
+  - JSONPath: .spec.members
+    description: Namespaces that are members of this Control Plane
+    name: Members
+    type: string
+
+---
+
+# create role that can be used to grant users permission to create smcp and smmr resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: maistra-admin
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+- apiGroups: ["maistra.io"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: maistra-admin
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: maistra-admin
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-admin
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-admin: "true"
+rules:
+- apiGroups: ["config.istio.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["networking.istio.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["authentication.istio.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["rbac.istio.io"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-admin
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: istio-admin
 
 ---
 
@@ -99,6 +162,13 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - batch
+  resources:
+  - cronjobs
+  - jobs
+  verbs:
+  - '*'
+- apiGroups:
   - policy
   resources:
   - poddisruptionbudgets
@@ -118,6 +188,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - networking.k8s.io
+  resources:
+  - networkpolicies
+  verbs:
+  - '*'
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
@@ -132,7 +208,7 @@ rules:
   # for galley, *: get, list, watch
   # for mixer, *: create, get, list, watch
   # for pilot, *: *
-  # for istio-authenticated, *: *
+  # for istio-admin, *: *
   - '*'
   - meshpolicies
   verbs:
@@ -142,7 +218,7 @@ rules:
   resources:
   # for galley, *: get, list, watch
   # for pilot, *: *
-  # for istio-authenticated, *: *
+  # for istio-admin, *: *
   - '*'
   - attributemanifests
   - handlers
@@ -157,7 +233,7 @@ rules:
   resources:
   # for galley, *: get, list, watch
   # for pilot, *: *
-  # for istio-authenticated, *: *
+  # for istio-admin, *: *
   - '*'
   - gateways
   - destinationrules
@@ -175,12 +251,8 @@ rules:
 - apiGroups:
   - maistra.io
   resources:
-  - servicemeshcontrolplanes
-  - servicemeshcontrolplanes/status
-  - servicemeshcontrolplanes/finalizers
-  - servicemeshmemberrolls
-  - servicemeshmemberrolls/status
-  - servicemeshmemberrolls/finalizers
+  # for istio-admin clusterrole
+  - '*'
   verbs:
   - '*'
 - apiGroups:
@@ -192,11 +264,38 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - jaegertracing.io
+  resources:
+  - jaegers
+  verbs:
+  - '*'
+- apiGroups:
+  - kiali.io
+  resources:
+  - kialis
+  verbs:
+  - '*'
+- apiGroups:
   - apps.openshift.io
   resources:
   - deploymentconfigs
   verbs:
   - '*'
+- apiGroups:
+  - network.openshift.io
+  resources:
+  - clusternetworks
+  verbs:
+  - 'get'
+- apiGroups:
+  - network.openshift.io
+  resources:
+  - netnamespaces
+  verbs:
+  - 'get'
+  - 'list'
+  - 'watch'
+  - 'update'
 - apiGroups:
   - oauth.openshift.io
   resources:
@@ -221,8 +320,11 @@ rules:
   - security.openshift.io
   resources:
   - securitycontextconstraints
+  resourceNames:
+  - privileged
+  - anyuid
   verbs:
-  - '*'
+  - 'use'
 # for galley (pilot and prometheus also watch nodes)
 - apiGroups:
   - ""
@@ -276,7 +378,7 @@ rules:
   - list
   - watch
 # for pilot
-# for istio-authenticated, *: *
+# for istio-admin, *: *
 - apiGroups:
   - rbac.istio.io
   resources:
@@ -312,130 +414,32 @@ rules:
   - "/metrics"
   verbs:
   - get
-# citadel
+# citadel and oauth proxy
 - apiGroups:
   - authentication.k8s.io
   resources:
   - tokenreviews
   verbs:
   - create
-# kiali
-- apiGroups: [""]
+# oauth proxy
+- apiGroups:
+  - authorization.k8s.io
   resources:
-  - configmaps
-  - endpoints
-  - namespaces
-  - nodes
-  - pods
-  - pods/log
-  - services
-  - replicationcontrollers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups: ["extensions", "apps"]
-  resources:
-  - deployments
-  - statefulsets
-  - replicasets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups: ["autoscaling"]
-  resources:
-  - horizontalpodautoscalers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups: ["batch"]
-  resources:
-  - cronjobs
-  - jobs
-  verbs:
-  - '*'
-- apiGroups: ["project.openshift.io"]
-  resources:
-  - projects
-  verbs:
-  - get
-- apiGroups: ["route.openshift.io"]
-  resources:
-  - routes
-  verbs:
-  - get
-- apiGroups: ["apps.openshift.io"]
-  resources:
-  - deploymentconfigs
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups: ["config.istio.io"]
-  resources:
-  - apikeys
-  - authorizations
-  - checknothings
-  - circonuses
-  - deniers
-  - fluentds
-  - handlers
-  - kubernetesenvs
-  - kuberneteses
-  - listcheckers
-  - listentries
-  - logentries
-  - memquotas
-  - metrics
-  - opas
-  - prometheuses
-  - quotas
-  - quotaspecbindings
-  - quotaspecs
-  - rbacs
-  - reportnothings
-  - rules
-  - solarwindses
-  - stackdrivers
-  - statsds
-  - stdios
+  - subjectaccessreviews
   verbs:
   - create
-  - delete
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups: ["networking.istio.io"]
+
+# cni
+- apiGroups: ["k8s.cni.cncf.io"]
   resources:
-  - destinationrules
-  - gateways
-  - serviceentries
-  - virtualservices
+    - network-attachment-definitions
   verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups: ["authentication.istio.io"]
-  resources:
-  - policies
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - watch
-- apiGroups: ["monitoring.kiali.io"]
-  resources:
-  - monitoringdashboards
-  verbs:
-  - get
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - watch
 
 ---
 
@@ -444,6 +448,7 @@ kind: ServiceAccount
 metadata:
   name: {{ istio_operator_service_account }}
   namespace: {{ namespace }}
+
 
 ---
 
@@ -459,6 +464,69 @@ roleRef:
   kind: ClusterRole
   name: istio-operator
   apiGroup: rbac.authorization.k8s.io
+
+---
+
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  # this must match what is used inside the operator, which is <operator-namespace>.servicemesh-resources.maistra.io
+  name: istio-operator.servicemesh-resources.maistra.io
+webhooks:
+- name: smcp.validation.maistra.io
+  rules:
+  - apiGroups:
+    - maistra.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - servicemeshcontrolplanes
+  failurePolicy: Fail
+  clientConfig:
+    caBundle: ""
+    service:
+      name: admission-controller
+      namespace: {{ namespace }}
+      path: /validate-smcp
+  namespaceSelector: {}
+- name: smmr.validation.maistra.io
+  rules:
+  - apiGroups:
+    - maistra.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - servicemeshmemberrolls
+  failurePolicy: Fail
+  clientConfig:
+    caBundle: ""
+    service:
+      name: admission-controller
+      namespace: {{ namespace }}
+      path: /validate-smmr
+  namespaceSelector: {}
+  
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: admission-controller
+  namespace: {{ namespace }}
+spec:
+  ports:
+  - port: 443
+    protocol: TCP
+    targetPort: 11999
+  selector:
+    name: istio-operator
+  type: ClusterIP
 
 ---
 
