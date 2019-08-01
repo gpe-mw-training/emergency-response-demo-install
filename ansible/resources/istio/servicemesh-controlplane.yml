@@ -16,6 +16,7 @@ spec:
       mtls: 
         enabled: {{ controlplane_mtls_enabled }}
       disablePolicyChecks: {{ controlplane_disable_policy_checks }}
+      multitenant: {{ controlplane_multitenant }}
 
       proxy:
         # constrain resources for use in smaller environments

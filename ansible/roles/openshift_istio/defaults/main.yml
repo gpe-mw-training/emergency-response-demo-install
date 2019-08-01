@@ -6,13 +6,15 @@ service_mesh_controlplane_name: basic-install
 
 controlplane_hub: registry.redhat.io/openshift-istio-tech-preview
 
-controlplane_tag: 0.11.1
+controlplane_tag: 0.12.0
 
 controlplane_security_enabled: false
 controlplane_mtls_enabled: false
 controlplane_disable_policy_checks: false
 
 controlplane_proxy_init_image: proxy-init
+
+controlplane_multitenant: false
 
 istio_ingressgateway_ior_enabled: false
 
