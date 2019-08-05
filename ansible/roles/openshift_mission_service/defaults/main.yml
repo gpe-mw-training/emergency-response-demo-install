@@ -51,3 +51,9 @@ istio_virtualservice_template: mission-service-virtualservice.yml
 
 istio_gateway_route: "{{ application_name }}-gateway"
 istio_gateway_route_template: mission-service-gateway-route.yml
+
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: mission-service-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: mission-service-mtls-policy.yml
