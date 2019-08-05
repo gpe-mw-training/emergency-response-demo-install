@@ -41,3 +41,9 @@ kafka_topic_incident_event: topic-incident-event
 kafka_topic_incident_command: topic-incident-command
 kafka_topic_responder_event: topic-responder-event
 kafka_topic_responder_command: topic-responder-command
+
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: emergency-console-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: emergency-console-mtls-policy.yml

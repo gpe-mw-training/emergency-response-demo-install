@@ -1,0 +1,31 @@
+---
+
+- name: copy mtls policy template
+  template:
+    src: "{{ resources_dir }}/{{ istio_mtls_policy_template }}"
+    dest: "{{ work_dir }}/{{ istio_mtls_policy_template }}"
+
+- name: create mtls policy
+  oc_obj:
+    state: present
+    kind: Policy
+    name: "{{ istio_mtls_policy }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ istio_mtls_policy_template }}"
+
+- name: copy mtls destinationrule template
+  template:
+    src: "{{ resources_dir }}/{{ istio_mtls_destinationrule_template }}"
+    dest: "{{ work_dir }}/{{ istio_mtls_destinationrule_template }}"
+
+- name: create mtls destinationrule
+  oc_obj:
+    state: present
+    kind: DestinationRule
+    name: "{{ istio_mtls_destinationrule }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ istio_mtls_destinationrule_template }}"
