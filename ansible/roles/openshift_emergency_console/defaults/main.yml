@@ -42,6 +42,13 @@ kafka_topic_incident_command: topic-incident-command
 kafka_topic_responder_event: topic-responder-event
 kafka_topic_responder_command: topic-responder-command
 
+emergency_console_host: "{{ application_name }}.{{ istio_gateway_subdomain }}.{{ ocp_domain }}"
+istio_virtualservice: "{{ application_name }}-virtualservice"
+istio_virtualservice_template: emergency-console-virtualservice.yml
+
+istio_gateway_route: "{{ application_name }}-gateway"
+istio_gateway_route_template: emergency-console-gateway-route.yml
+
 istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
 istio_mtls_destinationrule_template: emergency-console-client-mtls-destinationrule.yml
 
