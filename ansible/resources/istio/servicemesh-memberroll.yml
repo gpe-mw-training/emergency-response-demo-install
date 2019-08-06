@@ -1,0 +1,8 @@
+apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: {{ service_mesh_memberroll_name }}
+spec:
+  members:
+  # a list of namespaces joined into the service mesh
+  - {{ namespace_services }}

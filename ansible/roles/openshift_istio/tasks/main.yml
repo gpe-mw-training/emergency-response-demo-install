@@ -33,4 +33,27 @@
       - "{{ work_dir }}/{{ service_mesh_controlplane_template }}"
   when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
 
+- name: copy memberroll template
+  template:
+    src: "{{ resources_dir }}/{{ service_mesh_memberroll_template }}"
+    dest: "{{ work_dir }}/{{ service_mesh_memberroll_template }}"
+
+- name: check if istio memberrole is deployed
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    namespace: "{{ namespace }}"
+    name: "{{ service_mesh_memberroll_name }}"
+    kind: servicemeshmemberroll
+  register: result
+
+- name: deploy istio memberroll
+  oc_list:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ service_mesh_memberroll_template }}"
+  when: result.ansible_module_results.stderr is defined and result.ansible_module_results.stderr != ""
+
 # TODO: wait until service-mesh is completely installed an up

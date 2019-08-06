@@ -1,5 +1,13 @@
 ---
 
+- name: delete istio servicemesh memberroll
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    namespace: "{{ namespace }}"
+    name: "{{ service_mesh_memberroll_name }}"
+    kind: servicemeshmemberroll
+
 - name: delete istio controlplane
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
