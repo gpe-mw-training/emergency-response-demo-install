@@ -20,10 +20,10 @@ controlplane_multitenant: true
 
 istio_ingressgateway_ior_enabled: false
 
-kiali_enabled: true
+kiali_enabled: false
 kiali_dashboard_user: admin
 kiali_dashboard_password: admin
 
-tracing_enabled: true
+tracing_enabled: false
 
 threescale_enabled: false
