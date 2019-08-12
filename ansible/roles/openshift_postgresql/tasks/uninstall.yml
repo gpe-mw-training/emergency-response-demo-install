@@ -38,6 +38,12 @@
     name: "{{ postgresql_init_configmap }}"
     namespace: "{{ namespace }}"
 
+- name: remove scc privileged from {{ postgresql_service_account }} service account
+  shell: "{{ openshift_cli }} adm policy remove-scc-from-user privileged -z {{ postgresql_service_account }} -n {{ namespace }}"
+
+- name: remove scc anyuid from {{ postgresql_service_account }} service account
+  shell: "{{ openshift_cli }} adm policy remove-scc-from-user anyuid -z {{ postgresql_service_account }} -n {{ namespace }}"
+
 - name: delete {{ postgresql_service_account }} service account
   oc_serviceaccount:
     oc_binary: "{{ openshift_cli }}"

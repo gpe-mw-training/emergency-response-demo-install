@@ -51,7 +51,13 @@
     from_literal:
       database-user: "{{ postgresql_username }}"
       database-password: "{{ postgresql_password }}"
-      database-name: "{{ postgresql_database }}"    
+      database-name: "{{ postgresql_database }}"
+
+- name: add scc privileged to {{ postgresql_service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user privileged -z {{ postgresql_service_account }} -n {{ namespace }}"
+
+- name: add scc anyuid to {{ postgresql_service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ postgresql_service_account }} -n {{ namespace }}"
   
 - name: check if postgresql is deployed
   oc_obj:

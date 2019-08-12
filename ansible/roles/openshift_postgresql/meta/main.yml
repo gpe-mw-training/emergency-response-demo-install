@@ -2,6 +2,7 @@
 
 dependencies:
   - role: work_dir
+  - role: openshift_cluster_admin_access
   - role: openshift_project
     when: >
       ACTION is not defined or
