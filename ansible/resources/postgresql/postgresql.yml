@@ -77,6 +77,8 @@ items:
         labels:
           name: {{ postgresql_application_name }}
           app: {{ postgresql_application_name }}
+        annotations:
+          sidecar.istio.io/inject: "true"
       spec:
         serviceAccountName: "{{ postgresql_service_account }}"
         containers:
