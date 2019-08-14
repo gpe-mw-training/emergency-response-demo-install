@@ -12,3 +12,9 @@ postgresql_memory_limit: 512Mi
 postgresql_cpu_limit: 500m
 postgresql_memory_request: 256Mi
 postgresql_cpu_request: 100m
+
+istio_mtls_destinationrule: "{{postgresql_application_name }}-client-mtls"
+istio_mtls_destinationrule_template: postgresql-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ postgresql_application_name }}-strict-mtls"
+istio_mtls_policy_template: postgresql-mtls-policy.yml

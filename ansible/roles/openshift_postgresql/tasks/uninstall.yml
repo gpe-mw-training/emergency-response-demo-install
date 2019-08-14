@@ -50,3 +50,5 @@
     state: absent
     name: "{{ postgresql_service_account }}"
     namespace: "{{ namespace }}"
+
+- include_tasks: istio_uninstall.yml
