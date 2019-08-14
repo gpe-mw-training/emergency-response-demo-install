@@ -11,3 +11,8 @@ istio_ingress_service_selector: ingressgateway
 istio_gateway_subdomain: "erd"
 istio_gateway_host: "*.{{ istio_gateway_subdomain }}"
 istio_gateway: "erd-wildcard-gateway"
+
+namespace_istio_jaeger_operator: observability
+
+uninstall_delete_project: false
+uninstall_cluster_resources: false

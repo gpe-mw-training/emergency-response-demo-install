@@ -1,0 +1,65 @@
+---
+
+- name: create jaeger jaegertracing crd
+  oc_obj:
+    state: present
+    kind: crd
+    name: "{{ jaeger_jaegertracing_crd }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ resources_dir }}/{{ jaeger_jaegertracing_crd_template }}"
+
+- name: create jaeger operator clusterrole
+  oc_obj:
+    state: present
+    kind: clusterrole
+    name: "{{ jaeger_operator_clusterrole }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ resources_dir }}/{{ jaeger_operator_clusterrole_template }}"
+
+- name: create jaeger operator service account
+  oc_serviceaccount:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: "{{ jaeger_operator_serviceaccount }}"
+
+- name: copy jaeger clusterrole binding template
+  template:
+    src: "{{ resources_dir }}/{{ jaeger_operator_clusterrolebinding_template }}"
+    dest: "{{ work_dir }}/{{ jaeger_operator_clusterrolebinding_template }}"
+
+- name: create jaeger clusterrole binding
+  oc_obj:
+    state: present
+    kind: ClusterRoleBinding
+    name: "{{ jaeger_operator_clusterrolebinding }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ jaeger_operator_clusterrolebinding_template }}"
+
+- name: copy jaeger operator template
+  template:
+    src: "{{ resources_dir }}/{{ jaeger_operator_deployment_template }}"
+    dest: "{{ work_dir }}/{{ jaeger_operator_deployment_template }}"
+
+- name: deploy jaeger operator
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    kind: deployment
+    name: "{{ jaeger_operator_deployment }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ jaeger_operator_deployment_template }}"
+
+- name: wait until jaeger operator is up and running
+  shell: "{{ openshift_cli }} get deployment {{ jaeger_operator_deployment }} -o template --template={{ json_template }} -n {{ namespace }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 30
+  delay: 10
+  changed_when: false

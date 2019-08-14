@@ -1,0 +1,17 @@
+---
+
+jaeger_operator_image: jaegertracing/jaeger-operator:1.13.1
+
+jaeger_operator_deployment: jaeger-operator
+jaeger_operator_deployment_template: jaeger-operator.yml
+
+jaeger_jaegertracing_crd: jaegers.jaegertracing.io
+jaeger_jaegertracing_crd_template: jaegertracing-v1-jaeger-crd.yml
+
+jaeger_operator_clusterrole: jaeger-operator
+jaeger_operator_clusterrole_template: jaeger-operator-clusterrole.yml
+
+jaeger_operator_clusterrolebinding: jaeger-operator
+jaeger_operator_clusterrolebinding_template: jaeger-operator-clusterrolebinding.yml
+
+jaeger_operator_serviceaccount: jaeger-operator

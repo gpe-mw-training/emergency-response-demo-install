@@ -1,0 +1,28 @@
+---
+
+- name: Deploy Jaeger Operator for Istio
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - group_vars/istio.yml
+
+  tasks:
+    - set_fact:
+        namespace: "{{ namespace_istio_jaeger_operator }}"
+        resources_dir: "{{ resources_base_dir }}/istio_jaeger"
+        work_dir_name: istio-jaeger-operator
+    - include_role:
+        name: openshift_istio_jaeger_operator
+      when: >
+        ACTION is not defined or
+        ACTION is none or
+        ACTION|trim() == "" or
+        ACTION|trim() == "install"
+    - include_role:
+        name: openshift_istio_jaeger_operator
+        tasks_from: uninstall
+      when: >
+        ACTION is defined and
+        ACTION|trim() == "uninstall"
