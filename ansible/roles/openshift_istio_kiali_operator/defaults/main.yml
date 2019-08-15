@@ -1,0 +1,17 @@
+---
+
+kiali_operator_image: quay.io/kiali/kiali-operator:v1.0.0
+
+kiali_crd: kialis.kiali.io
+kiali_crd_template: kiali-crd.yml
+
+kiali_operator_serviceaccount: kiali-operator
+
+kiali_operator_clusterrole: kiali-operator
+kiali_operator_clusterrole_template: kiali-operator-clusterrole.yml
+
+kiali_operator_clusterrolebinding: kiali-operator
+kiali_operator_clusterrolebinding_template: kiali-operator-clusterrolebinding.yml
+
+kiali_operator_deployment: kiali-operator
+kiali_operator_deployment_template: kiali-operator.yml

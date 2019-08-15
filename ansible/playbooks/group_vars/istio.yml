@@ -14,5 +14,7 @@ istio_gateway: "erd-wildcard-gateway"
 
 namespace_istio_jaeger_operator: observability
 
+namespace_istio_kiali_operator: kiali-operator
+
 uninstall_delete_project: false
 uninstall_cluster_resources: false

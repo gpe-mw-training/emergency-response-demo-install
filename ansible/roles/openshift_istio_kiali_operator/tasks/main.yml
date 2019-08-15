@@ -1,0 +1,63 @@
+---
+
+- import_role:
+    name: openshift_apply_cluster_resource
+  vars:
+    resource_type: crd
+    resource: "{{ kiali_crd }}"
+    resource_template: "{{ resources_dir }}/{{ kiali_crd_template }}"
+
+- name: create kiali operator service account
+  oc_serviceaccount:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: "{{ kiali_operator_serviceaccount }}"
+
+- name: create kiali operator clusterrole
+  oc_obj:
+    state: present
+    kind: clusterrole
+    name: "{{ kiali_operator_clusterrole }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ resources_dir }}/{{ kiali_operator_clusterrole_template }}"
+
+- name: copy kiali clusterrole binding template
+  template:
+    src: "{{ resources_dir }}/{{ kiali_operator_clusterrolebinding_template }}"
+    dest: "{{ work_dir }}/{{ kiali_operator_clusterrolebinding_template }}"
+
+- name: create kiali clusterrole binding
+  oc_obj:
+    state: present
+    kind: ClusterRoleBinding
+    name: "{{ kiali_operator_clusterrolebinding }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ kiali_operator_clusterrolebinding_template }}"
+
+- name: copy kiali operator template
+  template:
+    src: "{{ resources_dir }}/{{ kiali_operator_deployment_template }}"
+    dest: "{{ work_dir }}/{{ kiali_operator_deployment_template }}"
+
+- name: deploy kiali operator
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    kind: deployment
+    name: "{{ kiali_operator_deployment }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ kiali_operator_deployment_template }}"
+
+- name: wait until kiali operator is up and running
+  shell: "{{ openshift_cli }} get deployment {{ kiali_operator_deployment }} -o template --template={{ json_template }} -n {{ namespace }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 30
+  delay: 10
+  changed_when: false
