@@ -87,3 +87,5 @@
     kind: rolebinding
 
 - include_tasks: remove_postgresql.yml
+
+- include_tasks: istio_uninstall.yml

@@ -78,3 +78,9 @@ incident_priority_service_incident_priority_path: "/priority/{incidentId}"
 
 prometheus_endpoint_path: "/actuator/prometheus"
 prometheus_endpoint_port: 8080
+
+istio_mtls_destinationrule: "{{ application_name }}-client-mtls"
+istio_mtls_destinationrule_template: process-service-client-mtls-destinationrule.yml
+
+istio_mtls_policy: "{{ application_name }}-strict-mtls"
+istio_mtls_policy_template: process-service-mtls-policy.yml
