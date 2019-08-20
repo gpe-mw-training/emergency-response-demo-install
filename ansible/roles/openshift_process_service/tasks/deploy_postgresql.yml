@@ -38,6 +38,7 @@
         --param=POSTGRESQL_REQUEST_MEMORY={{ process_service_postgresql_resources_requests_memory }} \
         --param=POSTGRESQL_LIMIT_CPU={{ process_service_postgresql_resources_limits_cpu }} \
         --param=POSTGRESQL_LIMIT_MEMORY={{ process_service_postgresql_resources_limits_memory }} \
+        --param=SERVICE_ACCOUNT={{ service_account }} \
         -n {{ namespace }}
 
 - name: wait until postgresql database is up and running

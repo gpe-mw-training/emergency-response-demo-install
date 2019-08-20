@@ -6,6 +6,19 @@
 - name: ensure container registry credentials can be mounted in builds
   shell: oc get secret imagestreamsecret -n openshift --export -o yaml | oc apply -n {{ namespace_tools }} -f -
 
+- name: create {{ service_account }} service account for {{ application_name }} application
+  oc_serviceaccount:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    name: "{{ service_account }}"
+    namespace: "{{ namespace }}"
+
+- name: add scc privileged to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user privileged -z {{ service_account }} -n {{ namespace }}"
+
+- name: add scc anyuid to {{ service_account }} service account
+  shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ namespace }}"
+
 # deploy postgresql
 - name: check if postgresql is deployed
   oc_obj:
@@ -60,19 +73,6 @@
     name: "{{ logging_configmap }}"
     from_file:
       logback.xml: "{{ work_dir }}/logback.xml"
-
-- name: create {{ service_account }} service account for {{ application_name }} application
-  oc_serviceaccount:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    name: "{{ service_account }}"
-    namespace: "{{ namespace }}"
-
-- name: add scc privileged to {{ service_account }} service account
-  shell: "{{ openshift_cli }} adm policy add-scc-to-user privileged -z {{ service_account }} -n {{ namespace }}"
-
-- name: add scc anyuid to {{ service_account }} service account
-  shell: "{{ openshift_cli }} adm policy add-scc-to-user anyuid -z {{ service_account }} -n {{ namespace }}"
 
 - name: give cluster view privileges to {{ service_account }} service account
   oc_adm_policy_user:

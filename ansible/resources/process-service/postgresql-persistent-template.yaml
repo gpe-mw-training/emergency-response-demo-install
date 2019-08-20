@@ -181,6 +181,8 @@ objects:
           securityContext:
             capabilities: {}
             privileged: false
+        serviceAccount: ${SERVICE_ACCOUNT}
+        serviceAccountName: ${SERVICE_ACCOUNT}
         volumes:
         - name: "${DATABASE_SERVICE_NAME}-data"
           persistentVolumeClaim:
@@ -237,3 +239,4 @@ parameters:
 - name: POSTGRESQL_REQUEST_MEMORY
 - name: POSTGRESQL_LIMIT_CPU
 - name: POSTGRESQL_LIMIT_MEMORY
+- name: SERVICE_ACCOUNT
