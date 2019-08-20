@@ -6,6 +6,6 @@ metadata:
 spec:
   peers:
   - mtls:
-      mode: STRICT
+      mode: PERMISSIVE
   targets:
   - name: {{ process_service_postgresql_service_name }}
