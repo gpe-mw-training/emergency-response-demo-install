@@ -84,3 +84,9 @@ istio_mtls_destinationrule_template: process-service-client-mtls-destinationrule
 
 istio_mtls_policy: "{{ application_name }}-strict-mtls"
 istio_mtls_policy_template: process-service-mtls-policy.yml
+
+istio_postgresql_mtls_destinationrule: "{{ application_name }}-postgresql-client-mtls"
+istio_postgresql_mtls_destinationrule_template: process-service-postgresql-client-mtls-destinationrule.yml
+
+istio_postgresql_mtls_policy: "{{ application_name }}-postgresql-strict-mtls"
+istio_postgresql_mtls_policy_template: process-service-postgresql-mtls-policy.yml

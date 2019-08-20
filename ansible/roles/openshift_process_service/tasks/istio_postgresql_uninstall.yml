@@ -1,0 +1,17 @@
+---
+
+- name: delete mtls policy
+  oc_obj:
+    state: absent
+    kind: Policy
+    name: "{{ istio_postgresql_mtls_policy }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+
+- name: delete mtls destinationrule
+  oc_obj:
+    state: absent
+    kind: DestinationRule
+    name: "{{ istio_postgresql_mtls_destinationrule }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"

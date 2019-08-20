@@ -88,4 +88,6 @@
 
 - include_tasks: remove_postgresql.yml
 
+- include_tasks: istio_postgresql_uninstall.yml
+
 - include_tasks: istio_uninstall.yml

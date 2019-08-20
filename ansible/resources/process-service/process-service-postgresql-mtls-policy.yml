@@ -1,0 +1,11 @@
+---
+apiVersion: authentication.istio.io/v1alpha1
+kind: Policy
+metadata:
+  name: {{ istio_postgresql_mtls_policy }}
+spec:
+  peers:
+  - mtls:
+      mode: STRICT
+  targets:
+  - name: {{ process_service_postgresql_service_name }}

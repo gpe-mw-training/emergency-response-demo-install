@@ -1,0 +1,10 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ istio_postgresql_mtls_destinationrule }}
+spec:
+  host: {{ process_service_postgresql_service_name }}.{{ namespace }}.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

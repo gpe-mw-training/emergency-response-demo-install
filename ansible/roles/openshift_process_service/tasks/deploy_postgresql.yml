@@ -50,3 +50,5 @@
   retries: 10
   delay: 30
   changed_when: false
+
+- include_tasks: istio_postgresql.yml
