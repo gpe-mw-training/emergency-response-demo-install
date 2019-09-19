@@ -1,0 +1,8 @@
+---
+
+namespace_jaeger: observability
+
+uninstall_delete_project: false
+uninstall_cluster_resources: false
+
+jaeger_instance: jaeger

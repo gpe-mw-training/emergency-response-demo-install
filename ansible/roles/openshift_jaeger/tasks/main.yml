@@ -1,0 +1,84 @@
+---
+
+- name: create CRD for Jaeger
+  oc_obj:
+    state: present
+    kind: CustomResourceDefinition
+    name: "{{ crd_jaeger }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ resources_dir }}/{{ crd_jaeger_template }}"
+
+- name: copy serviceaccount template to work directory
+  template:
+    src: "{{ resources_dir }}/{{ sa_jaeger_operator_template }}"
+    dest: "{{ work_dir }}/{{ sa_jaeger_operator_template }}"
+
+- name: create serviceaccount for Jaeger operator
+  oc_obj:
+    state: present
+    kind: ServiceAccount
+    name: "{{ sa_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ work_dir }}/{{ sa_jaeger_operator_template }}"
+
+- name: copy clusterrole template to work directory
+  template:
+    src: "{{ resources_dir }}/{{ clusterrole_jaeger_operator_template }}"
+    dest: "{{ work_dir }}/{{ clusterrole_jaeger_operator_template }}"
+
+- name: create clusterrole for Jaeger operator
+  oc_obj:
+    state: present
+    kind: clusterrole
+    name: "{{ clusterrole_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ clusterrole_jaeger_operator_template }}"
+
+- name: copy clusterrolebinding template to work directory
+  template:
+    src: "{{ resources_dir }}/{{ clusterrolebinding_jaeger_operator_template }}"
+    dest: "{{ work_dir }}/{{ clusterrolebinding_jaeger_operator_template }}"
+
+- name: create clusterrolebinding for Jaeger operator
+  oc_obj:
+    state: present
+    kind: clusterrolebinding
+    namespace: "{{ namespace }}"
+    name: "{{ clusterrolebinding_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ clusterrolebinding_jaeger_operator_template }}"
+
+- name: copy deployment template to work directory
+  template:
+    src: "{{ resources_dir }}/{{ deployment_jaeger_operator_template }}"
+    dest: "{{ work_dir }}/{{ deployment_jaeger_operator_template }}"
+
+- name: create deployment for Jaeger operator
+  oc_obj:
+    state: present
+    kind: deployment
+    namespace: "{{ namespace }}"
+    name: "{{ deployment_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ deployment_jaeger_operator_template }}"
+
+- name: copy jaeger custom resource template to work directory
+  template:
+    src: "{{ resources_dir }}/{{ cr_jaeger_template }}"
+    dest: "{{ work_dir }}/{{ cr_jaeger_template }}"
+
+- name: create jaeger custom resource
+  oc_obj:
+    state: present
+    kind: jaeger
+    namespace: "{{ namespace }}"
+    name: "{{ cr_jaeger }}"
+    oc_binary: "{{ openshift_cli }}"
+    files:
+      - "{{ work_dir }}/{{ cr_jaeger_template }}"  

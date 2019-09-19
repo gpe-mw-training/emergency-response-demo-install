@@ -1,0 +1,56 @@
+---
+
+- name: delete jaeger custom resource
+  oc_obj:
+    state: absent
+    kind: jaeger
+    namespace: "{{ namespace }}"
+    name: "{{ cr_jaeger }}"
+    oc_binary: "{{ openshift_cli }}"
+
+- name: delete deployment for Jaeger operator
+  oc_obj:
+    state: absent
+    kind: deployment
+    namespace: "{{ namespace }}"
+    name: "{{ deployment_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+
+- name: delete clusterrolebinding for Jaeger operator
+  oc_obj:
+    state: absent
+    kind: clusterrolebinding
+    namespace: "{{ namespace }}"
+    name: "{{ clusterrolebinding_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+
+- name: delete clusterrole for Jaeger operator
+  oc_obj:
+    state: absent
+    kind: clusterrole
+    name: "{{ clusterrole_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+  when: uninstall_cluster_resources|bool == true
+
+- name: delete serviceaccount for Jaeger operator
+  oc_obj:
+    state: absent
+    kind: ServiceAccount
+    name: "{{ sa_jaeger_operator }}"
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+
+- name: delete CRD for Jaeger
+  oc_obj:
+    state: absent
+    kind: CustomResourceDefinition
+    name: "{{ crd_jaeger }}"
+    oc_binary: "{{ openshift_cli }}"
+  when: uninstall_cluster_resources|bool == true
+
+- name: delete project {{ namespace }}
+  oc_project:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ namespace }}"
+  when: uninstall_delete_project|bool == true
