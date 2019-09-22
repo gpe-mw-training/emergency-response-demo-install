@@ -6,3 +6,5 @@ uninstall_delete_project: false
 uninstall_cluster_resources: false
 
 jaeger_instance: jaeger
+
+jaeger_agent_image: jaegertracing/jaeger-agent:1.14.0

@@ -47,3 +47,9 @@ logging_style: dev
 
 prometheus_endpoint_path: "/actuator/prometheus"
 prometheus_endpoint_port: 8080
+
+jaeger_enabled: true
+jaeger_service_name: "{{ incident_service_application_name }}"
+jaeger_udp_sender_host: localhost
+jaeger_udp_sender_port: 6831
+jaeger_probabilistic_sampler_rate: 0.2 
