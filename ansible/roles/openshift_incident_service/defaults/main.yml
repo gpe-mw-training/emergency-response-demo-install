@@ -52,4 +52,5 @@ jaeger_enabled: true
 jaeger_service_name: "{{ incident_service_application_name }}"
 jaeger_udp_sender_host: localhost
 jaeger_udp_sender_port: 6831
-jaeger_probabilistic_sampler_rate: 0.2 
+jaeger_remote_sampler_host: localhost
+jaeger_remote_sampler_port: 5778
