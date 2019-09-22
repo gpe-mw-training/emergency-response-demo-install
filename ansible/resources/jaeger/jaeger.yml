@@ -2,3 +2,10 @@ apiVersion: jaegertracing.io/v1
 kind: Jaeger
 metadata:
   name: {{ cr_jaeger }}
+spec:
+  strategy: allInOne
+  sampling:
+    options:
+      default_strategy:
+        type: probabilistic
+        param: 0.2
