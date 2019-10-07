@@ -262,6 +262,14 @@
     rolebinding_name: "{{ cluster_provisioner }}-admin"
     resource_name: admin
 
+- name: install observability
+  import_role:
+    name: openshift_jaeger
+  vars:
+    namespace: "{{ namespace_jaeger }}"
+    resources_dir: "{{ resources_base_dir }}/jaeger"
+    work_dir_name: jaeger
+
 - block:
   - name: start pipeline incident service
     shell: "{{ openshift_cli }} start-build {{ incident_service_application_name }}-pipeline -n {{ namespace_tools }}"

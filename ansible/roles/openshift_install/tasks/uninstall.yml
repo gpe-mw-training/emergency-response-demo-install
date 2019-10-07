@@ -222,6 +222,15 @@
     resources_dir: "{{ resources_base_dir }}/sso_theme_realm"
     work_dir_name: sso-theme-realm
 
+- name: uninstall observability
+  import_role:
+    name: openshift_jaeger
+    tasks_from: uninstall
+  vars:
+    namespace: "{{ namespace_jaeger }}"
+    work_dir_name: jaeger
+    resources_dir: "{{ resources_base_dir }}/jaeger"
+
 - name: remove user {{ cluster_provisioner }} as project admin in namespace kafka cluster
   oc_adm_policy_user:
     state: absent
@@ -289,3 +298,9 @@
     oc_binary: "{{ openshift_cli }}"
     state: absent
     name: "{{ namespace_strimzi_operator }}"
+
+- name: delete namespace jaeger
+  oc_project:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ namespace_jaeger }}"
