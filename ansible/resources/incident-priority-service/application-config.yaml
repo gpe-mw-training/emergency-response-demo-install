@@ -4,3 +4,16 @@ kafka:
   bootstrap-servers: {{ kafka_bootstrap_address }}
   group-id: {{ kafka_groupid }}
   topic-incident-assignment-event: {{ kafka_incident_assignment_event_topic }}
+
+# tracing
+tracing:
+  service-name: {{ jaeger_service_name }}
+  reporter-log-spans: {{ jaeger_reporter_log_spans }}
+  sampler-type: {{ jaeger_sampler_type }}
+  sampler-param: {{ jaeger_sampler_param }}
+  sampler-manager-host-port: {{ jaeger_manager_host_port }}
+  agent-host: {{ jaeger_agent_host }} 
+  agent-port: {{ jaeger_agent_port }}
+  # const
+  # sampler-type: const
+  # sampler-param: 1
