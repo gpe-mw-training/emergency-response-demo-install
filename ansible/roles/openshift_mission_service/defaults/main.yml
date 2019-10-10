@@ -47,3 +47,11 @@ datagrid_port: 11222
 map_token: ""
 
 logging_style: dev
+
+jaeger_service_name: "{{ mission_service_application_name }}"
+jaeger_reporter_log_spans: true
+jaeger_sampler_type: remote
+jaeger_sampler_param: 0.1
+jaeger_manager_host_port: localhost:5778
+jaeger_agent_host: localhost
+jaeger_agent_port: 6831
