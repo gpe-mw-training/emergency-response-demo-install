@@ -1,0 +1,55 @@
+---
+
+- name: check if Kafka connect is installed
+  oc_obj:
+    state: list
+    kind: kafkaconnect
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ kafka_connect_name }}"
+    namespace: "{{ namespace }}"
+  register: result
+
+- debug:
+    var: result
+
+- name: retrieve kafka connect url
+  shell: "{{ openshift_cli }} get route {{ kafka_connect_name }}-connect-api -o jsonpath='{.spec.host}' -n {{ namespace }}"
+  register: kafka_connect_url
+  when: result.ansible_module_results.stderr is not defined or result.ansible_module_results.stderr == ""
+
+- name: check if {{ kafka_connect_name }} connector exists
+  uri:
+    url: "http://{{ kafka_connect_url.stdout }}/connectors/{{ kafka_connect_name }}"
+    method: GET
+    headers:
+      Accept: application/json
+    status_code: 503,200,404
+  register: connector_exists
+  changed_when: false
+  when: result.ansible_module_results.stderr is not defined or result.ansible_module_results.stderr == ""
+
+- name: delete debezium connector on Kafka connect
+  uri:
+    url: "http://{{ kafka_connect_url.stdout }}/connectors/{{ kafka_connect_name }}"
+    method: DELETE
+    status_code: 204
+  when: >-
+    (result.ansible_module_results.stderr is not defined or
+    result.ansible_module_results.stderr == "") and 
+    connector_exists.status == "200"
+
+- name: delete kafka connect service
+  oc_route:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ namespace }}"
+    service_name: "{{ kafka_connect_name }}-connect-api"
+    name: "{{ kafka_connect_name }}-connect-api"
+
+- name: delete kafka connect object
+  oc_obj:
+    state: absent
+    kind: kafkaconnect
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ kafka_connect_name }}"
+    namespace: "{{ namespace }}"
