@@ -4,11 +4,16 @@ postgresql_service_account: postgresql
 postgresql_template: "{{ resources_dir }}/postgresql.yml"
 postgresql_init_configmap: "{{ postgresql_application_name }}-init"
 postgresql_pv_capacity: 5Gi
-postgresql_version: 9.6
-postgresql_is_namespace: openshift
+postgresql_imagestream_template: postgres-10-decoderbuf-imagestream.yml
+postgresql_imagestream_name: postgresql-decoderbufs
+postgresql_imagestream_namespace: openshift
+postgresql_imagestream_tag: "0"
 postgresql_max_connections: 100
 postgresql_max_prepared_transactions: 100
 postgresql_memory_limit: 512Mi
 postgresql_cpu_limit: 500m
 postgresql_memory_request: 256Mi
 postgresql_cpu_request: 100m
+
+postgresql_conf: postgresql-cfg
+postgresql_conf_configmap: "{{ postgresql_application_name }}-conf"
