@@ -15,9 +15,9 @@ kafka_connect_connector: debezium-postgres.json
 kafka_connect_template: kafka-connect.yml
 
 kafka_connect_requests_cpu: 100m
-kafka_connect_requests_memory: 100M
+kafka_connect_requests_memory: 250M
 kafka_connect_limits_cpu: 500m
-kafka_connect_limits_memory: 500M
+kafka_connect_limits_memory: 1G
 
 kafka_connect_liveness_probe_initial_delay_seconds: 45
 kafka_connect_liveness_probe_timeout_seconds: 5
