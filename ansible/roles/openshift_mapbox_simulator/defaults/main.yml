@@ -1,0 +1,39 @@
+---
+
+application_name: mapbox-simulator
+application_template: mapbox-simulator.yml
+application_properties: application-config.yaml
+application_configmap: mapbox-simulator
+application_service_account: mapbox-simulator
+application_image: redhat-openjdk18-openshift:1.4
+application_image_namespace: openshift
+
+buildconfig_template: mapbox-simulator-binary-buildconfig.yml
+buildconfig_name: "{{ application_name }}-binary"
+
+imagestream_template: mapbox-simulator-imagestream.yml
+imagestream_name: "{{ application_name }}"
+
+resources_limits_cpu: 500m
+resources_limits_memory: 500Mi
+resources_requests_cpu: 100m
+resources_requests_memory: 200Mi
+
+mongodb_template: mongodb-persistent.yml
+
+mongodb_service_account: "{{ application_service_account }}"
+mongodb_database_service: mapbox-simulator-mongodb
+mongodb_user: naps
+mongodb_password: naps
+mongodb_database: mapbox
+mongodb_volume_capacity: 1Gi
+mongodb_imagestream: mongodb
+mongodb_imagestream_namespace: openshift
+mongodb_version: 3.6
+mongodb_cpu_request: 200m
+mongodb_cpu_limit: 500m
+mongodb_memory_request: 200Mi
+mongodb_memory_limit: 512Mi
+
+logging_configmap: "{{ application_name }}-logging"
+logging_style: dev

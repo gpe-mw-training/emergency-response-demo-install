@@ -1,0 +1,7 @@
+http:
+  port: 8080
+mongodb:
+  connection_string: mongodb://{{ mongodb_database_service }}.{{ namespace }}.svc:27017
+  db_name: {{ mongodb_database }}
+  username: {{ mongodb_user }}
+  password: {{ mongodb_password }}

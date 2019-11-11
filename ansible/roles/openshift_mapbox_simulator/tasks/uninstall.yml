@@ -1,0 +1,115 @@
+---
+
+- name: remove {{ application_name }} deploymentconfig
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: dc
+    name: "{{ application_name }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ application_name }} service
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: service
+    name: "{{ application_name }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ application_name }} route
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: route
+    name: "{{ application_name }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ application_configmap }} configmap
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: configmap
+    name: "{{ application_configmap }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ logging_configmap }} configmap
+  oc_configmap:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    namespace: "{{ namespace }}"
+    name: "{{ logging_configmap }}"
+
+- name: remove {{ buildconfig_name }} bc
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: bc
+    name: "{{ buildconfig_name }}"
+    namespace: "{{ namespace_tools }}"
+
+- name: remove {{ imagestream_name }} is in the {{ namespace_tools }} namespace
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: is
+    name: "{{ imagestream_name }}"
+    namespace: "{{ namespace_tools }}"
+
+- name: remove {{ imagestream_name }} is in the {{ namespace }} namespace
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: is
+    name: "{{ imagestream_name }}"
+    namespace: "{{ namespace_tools }}"
+
+- name: remove {{ mongodb_database_service }} deploymentconfig
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: dc
+    name: "{{ mongodb_database_service }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ mongodb_database_service }} pvc
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: pvc
+    name: "{{ mongodb_database_service }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ mongodb_database_service }} service
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: service
+    name: "{{ mongodb_database_service }}"
+    namespace: "{{ namespace }}"
+
+- name: remove {{ mongodb_database_service }} secret
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    kind: secret
+    name: "{{ mongodb_database_service }}"
+    namespace: "{{ namespace }}"
+
+- name: remove cluster view privileges from {{ application_service_account }} service account
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    kind: rolebinding
+    namespace: "{{ namespace }}"
+    name: "{{ application_service_account }}-view"
+
+- name: remove {{ application_service_account}} service account
+  oc_serviceaccount:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ application_service_account }}"
+    namespace: "{{ namespace }}"
+
+
+
+

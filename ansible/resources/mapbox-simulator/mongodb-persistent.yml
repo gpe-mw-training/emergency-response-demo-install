@@ -1,0 +1,146 @@
+---
+kind: List
+apiVersion: v1
+items:
+- kind: Secret
+  apiVersion: v1
+  metadata:
+    name: "{{ mongodb_database_service }}"
+    annotations:
+      template.openshift.io/expose-username: "{.data['database-user']}"
+      template.openshift.io/expose-password: "{.data['database-password']}"
+      template.openshift.io/expose-admin_password: "{.data['database-admin-password']}"
+      template.openshift.io/expose-database_name: "{.data['database-name']}"
+  stringData:
+    database-user: "{{ mongodb_user }}"
+    database-password: "{{ mongodb_password }}"
+    database-admin-password: "{{ mongodb_admin_password }}"
+    database-name: "{{ mongodb_database }}"
+- kind: Service
+  apiVersion: v1
+  metadata:
+    name: "{{ mongodb_database_service }}"
+    labels:
+      app: {{ application_name }}
+    annotations:
+      template.openshift.io/expose-uri: mongodb://{.spec.clusterIP}:{.spec.ports[?(.name=="mongo")].port}
+  spec:
+    ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+      nodePort: 0
+    selector:
+      name: "{{ mongodb_database_service }}"
+    type: ClusterIP
+    sessionAffinity: None
+  status:
+    loadBalancer: {}
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: "{{ mongodb_database_service }}"
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: "{{ mongodb_volume_capacity }}"
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: "{{ mongodb_database_service }}"
+    labels:
+      app: {{ application_name }}
+    annotations:
+      template.alpha.openshift.io/wait-for-ready: 'true'
+  spec:
+    strategy:
+      type: Recreate
+    triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+        - mongodb
+        from:
+          kind: ImageStreamTag
+          name: {{ mongodb_imagestream }}:{{ mongodb_version }}
+          namespace: "{{ mongodb_imagestream_namespace }}"
+        lastTriggeredImage: ''
+    - type: ConfigChange
+    replicas: 1
+    selector:
+      name: "{{ mongodb_database_service }}"
+    template:
+      metadata:
+        labels:
+          name: "{{ mongodb_database_service }}"
+          app: {{ application_name }}
+      spec:
+        serviceAccountName: "{{ mongodb_service_account }}"
+        containers:
+        - name: mongodb
+          image: " "
+          ports:
+          - containerPort: 27017
+            protocol: TCP
+          readinessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 3
+            exec:
+              command:
+              - "/bin/sh"
+              - "-i"
+              - "-c"
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+          livenessProbe:
+            timeoutSeconds: 1
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 27017
+          env:
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                name: "{{ mongodb_database_service }}"
+                key: database-user
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ mongodb_database_service }}"
+                key: database-password
+          - name: MONGODB_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: "{{ mongodb_database_service }}"
+                key: database-admin-password
+          - name: MONGODB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: "{{ mongodb_database_service }}"
+                key: database-name
+          resources:
+            requests:
+              cpu: {{ mongodb_cpu_request }}
+              memory: {{ mongodb_memory_request }}
+            limits:
+              cpu: {{ mongodb_cpu_limit }}
+              memory: "{{ mongodb_memory_limit }}"
+          volumeMounts:
+          - name: "{{ mongodb_database_service }}-data"
+            mountPath: "/var/lib/mongodb/data"
+          terminationMessagePath: "/dev/termination-log"
+          imagePullPolicy: IfNotPresent
+          capabilities: {}
+          securityContext:
+            capabilities: {}
+            privileged: false
+        volumes:
+        - name: "{{ mongodb_database_service }}-data"
+          persistentVolumeClaim:
+            claimName: "{{ mongodb_database_service }}"
+        restartPolicy: Always
+        dnsPolicy: ClusterFirst
