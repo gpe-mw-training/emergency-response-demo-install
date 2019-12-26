@@ -45,5 +45,6 @@ datagrid_service: "{{ datagrid_application_name }}.{{ namespace_datagrid }}.svc"
 datagrid_port: 11222
 
 map_token: ""
+map_baseurl: ""
 
 logging_style: dev
