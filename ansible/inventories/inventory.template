@@ -6,7 +6,7 @@ map_token=replaceme
 deploy_from=image
 
 # If set to True, then every user that creates an account in Emergency Response demo will automatically be a "realm-admin"
-set_realm_admin_as_default: False
+set_realm_admin_as_default=False
 
 # If set to true, installs the monitoring stack
 install_monitoring=true
