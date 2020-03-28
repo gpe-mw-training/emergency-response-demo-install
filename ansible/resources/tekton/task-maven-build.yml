@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_maven_build_task_name }}
+spec:
+  workspaces:
+    - name: workspace
+  inputs:
+    params:
+      - name: artifact
+        description: "The artifact to deploy"
+      - name: buildConfig
+        description: "The build config to launch"
+  steps:
+    - name: mvn-settings
+      image: {{ mvn_settings_image }}
+      script: |
+        #!/usr/bin/env bash
+      
+        DIR=$(workspaces.workspace.path)
+        mkdir -p $DIR/.m2
+        [[ -f $DIR/.m2/settings.xml ]] && \
+        echo 'using existing $DIR/.m2/settings.xml' && \
+        cat $DIR/.m2/settings.xml && exit 0
+
+        cat > $DIR/.m2/settings.xml <<EOF
+        <settings>
+          <mirrors>
+            <mirror>
+              <id>mirror.default</id>
+              <name>mirror.default</name>
+              <url>{{ maven_mirror_url }}</url>
+              <mirrorOf>*</mirrorOf>
+            </mirror>
+          </mirrors>
+        </settings>
+        EOF
+
+        [[ -f $DIR/.m2/settings.xml ]] && cat $DIR/.m2/settings.xml
+        [[ -f $DIR/.m2/settings.xml ]] || echo skipping settings 
+
+    - name: package
+      image: {{ maven_image }}
+      workingDir: $(workspaces.workspace.path)/source
+      script: >
+        /usr/bin/mvn package -s $(workspaces.workspace.path)/.m2/settings.xml
+        -Dmaven.repo.local=$(workspaces.workspace.path)/.m2
+    - name: copy-assets
+      image: {{ mvn_settings_image }}
+      script: |
+        #!/usr/bin/env bash
+
+        DIR=$(workspaces.workspace.path)
+
+        if [[ -d $DIR/source/upload ]]; then
+           echo "deleting existing directory $DIR/source/upload"
+           rm -rf $DIR/source/upload
+        fi
+
+        mkdir -m 775 $DIR/source/upload 
+
+        cp $DIR/source/target/$(inputs.params.artifact) $DIR/source/upload
+
+    - name: oc-binary-build 
+      image: {{ openshift_cli_image }}
+      command: ["/usr/local/bin/oc"]
+      workingDir: $(workspaces.workspace.path)/source/upload
+      args:
+        - start-build
+        - -w
+        - -F
+        - $(inputs.params.buildConfig)
+        - --from-dir
+        - "."
+
+# TODO: artifactId: get from pom.xml, put into workspace file

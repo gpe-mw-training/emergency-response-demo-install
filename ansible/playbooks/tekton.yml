@@ -1,0 +1,28 @@
+---
+
+- name: Deploy Tekton Resources
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - group_vars/tools.yml
+
+  tasks:
+    - set_fact:
+        namespace: "{{ namespace_tools }}"
+        work_dir_name: tekton
+        resources_dir: "{{ resources_base_dir }}/tekton"
+    - include_role:
+        name: tekton
+      when: >
+        ACTION is not defined or
+        ACTION is none or
+        ACTION|trim() == "" or
+        ACTION|trim() == "create"
+    - include_role:
+        name: tekton
+        tasks_from: uninstall
+      when: >
+        ACTION is defined and
+        ACTION|trim() == "uninstall"

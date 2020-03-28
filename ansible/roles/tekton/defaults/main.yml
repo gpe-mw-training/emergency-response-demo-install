@@ -1,0 +1,21 @@
+tekton_maven_build_task_template: task-maven-build.yml
+tekton_maven_build_task_name: maven-with-binary-build
+tekton_deploy_task_template: task-deploy.yml
+tekton_deploy_task_name: deploy
+tekton_build_deploy_pipeline_template: pipeline-build-deploy.yml
+tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_clone_to_workspace_task_template: task-clone-to-workspace.yml
+tekton_clone_to_workspace_task_name: clone-to-workspace
+
+mvn_settings_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+copy_source_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+
+nexus_service: "nexus.{{ namespace }}.svc"
+nexus_service_port: 8081
+nexus_service_path: content/groups/public
+nexus_url: "http://{{ nexus_service}}:{{ nexus_service_port }}"
+maven_mirror_url: "{{ nexus_url }}/{{ nexus_service_path }}"
+
+maven_image: maven:3.6.0-jdk-8-slim
+
+openshift_cli_image: quay.io/openshift-pipeline/openshift-cli:latest

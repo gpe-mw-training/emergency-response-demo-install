@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: {{ tekton_build_deploy_pipeline_name }}
+spec:
+  workspaces:
+    - name: workspace
+  resources:
+    - name: git-repo
+      type: git
+  params:
+    - name: artifact
+      description: "The artifact to deploy"
+      type: string
+    - name: buildConfig
+      description: "The build config to launch"
+      type: string
+    - name: fromNamespace
+      description: the namespace we are tagging from
+      type: string
+    - name: toNamespace
+      description: the namespace we are tagging to
+      type: string
+    - name: imageStream
+      description: the imagestream
+      type: string
+  tasks:
+    - name: clone-source-to-workspace
+      taskRef:
+        name: {{ tekton_clone_to_workspace_task_name }}
+      workspaces:
+        - name: workspace
+          workspace: workspace
+      resources:
+        inputs:
+          - name: source
+            resource: git-repo
+    - name: maven-with-binary-build
+      taskRef:
+        name: {{ tekton_maven_build_task_name }}
+      runAfter:
+        - clone-source-to-workspace
+      params:
+        - name: artifact
+          value: $(params.artifact)
+        - name: buildConfig
+          value: $(params.buildConfig)
+      workspaces:
+        - name: workspace
+          workspace: workspace
+    - name: deploy
+      taskRef:
+        name: {{ tekton_deploy_task_name }}
+      runAfter:
+        - maven-with-binary-build
+      params:
+      - name: fromNamespace
+        value: $(params.fromNamespace)
+      - name: toNamespace
+        value: $(params.toNamespace)
+      - name: imageStream
+        value: $(params.imageStream)
+      - name: tag
+        value: latest
