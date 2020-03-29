@@ -27,8 +27,13 @@ imagestream_template: incident-priority-service-imagestream.yml
 image_imagestream_name: "{{ application_name }}"
 image_imagestream_template: incident-priority-service-image-is.yml
 
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: incident-priority-service-pipeline.yml
+tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_resource_git_template: incident-priority-service-tekton-resource-git.yml
+tekton_resource_git_name: "{{ application_name }}-git"
+tekton_pipeline_run_template: incident-priority-service-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: incident-priority-service-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
 
 application_template: incident-priority-service.yml
 
