@@ -16,6 +16,6 @@ nexus_service_path: content/groups/public
 nexus_url: "http://{{ nexus_service}}:{{ nexus_service_port }}"
 maven_mirror_url: "{{ nexus_url }}/{{ nexus_service_path }}"
 
-maven_image: maven:3.6.0-jdk-8-slim
+maven_image: quay.io/btison/maven:3.6.3
 
 openshift_cli_image: quay.io/btison/openshift-cli:latest
