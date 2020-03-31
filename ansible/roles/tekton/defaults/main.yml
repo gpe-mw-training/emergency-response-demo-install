@@ -18,4 +18,4 @@ maven_mirror_url: "{{ nexus_url }}/{{ nexus_service_path }}"
 
 maven_image: maven:3.6.0-jdk-8-slim
 
-openshift_cli_image: quay.io/openshift-pipeline/openshift-cli:latest
+openshift_cli_image: quay.io/btison/openshift-cli:latest
