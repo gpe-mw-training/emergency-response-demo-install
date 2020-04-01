@@ -7,8 +7,6 @@ metadata:
     tekton.dev/pipeline: {{ tekton_build_deploy_pipeline_name }}
 spec:
   params:
-    - name: artifact
-      value: 'incident-priority-service-1.1.0-SNAPSHOT.jar'
     - name: buildConfig
       value: {{ application_name }}-binary
     - name: fromNamespace

@@ -1,14 +1,15 @@
 tekton_maven_build_task_template: task-maven-build.yml
-tekton_maven_build_task_name: maven-with-binary-build
+tekton_maven_build_task_name: maven-build
 tekton_deploy_task_template: task-deploy.yml
 tekton_deploy_task_name: deploy
 tekton_build_deploy_pipeline_template: pipeline-build-deploy.yml
 tekton_build_deploy_pipeline_name: build-and-deploy
 tekton_clone_to_workspace_task_template: task-clone-to-workspace.yml
 tekton_clone_to_workspace_task_name: clone-to-workspace
+tekton_ocp_build_task_template: task-ocp-build.yml
+tekton_ocp_build_task_name: ocp-build
 
-mvn_settings_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
-copy_source_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+base_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 nexus_service: "nexus.{{ namespace }}.svc"
 nexus_service_port: 8081

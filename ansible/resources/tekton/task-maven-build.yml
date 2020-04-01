@@ -7,13 +7,11 @@ spec:
     - name: workspace
   inputs:
     params:
-      - name: artifact
-        description: "The artifact to deploy"
       - name: buildConfig
         description: "The build config to launch"
   steps:
     - name: mvn-settings
-      image: {{ mvn_settings_image }}
+      image: {{ base_image }}
       script: |
         #!/usr/bin/env bash
       
@@ -45,23 +43,8 @@ spec:
       script: >
         /usr/bin/mvn package -s $(workspaces.workspace.path)/.m2/settings.xml
         -Dmaven.repo.local=$(workspaces.workspace.path)/.m2
-    - name: copy-assets
-      image: {{ mvn_settings_image }}
-      script: |
-        #!/usr/bin/env bash
 
-        DIR=$(workspaces.workspace.path)
-
-        if [[ -d $DIR/source/upload ]]; then
-           echo "deleting existing directory $DIR/source/upload"
-           rm -rf $DIR/source/upload
-        fi
-
-        mkdir -m 775 $DIR/source/upload 
-
-        cp $DIR/source/target/$(inputs.params.artifact) $DIR/source/upload
-
-    - name: extract-artifact-name
+    - name: artifact-name
       image: {{ maven_image }}
       workingDir: $(workspaces.workspace.path)/source
       script: >
@@ -86,14 +69,28 @@ spec:
 
         echo $(cat $DIR/source/artifact.txt)
 
-    - name: oc-binary-build 
-      image: {{ openshift_cli_image }}
-      command: ["/usr/bin/oc"]
-      workingDir: $(workspaces.workspace.path)/source/upload
-      args:
-        - start-build
-        - -w
-        - -F
-        - $(inputs.params.buildConfig)
-        - --from-dir
-        - "."
+    - name: copy-artifact
+      image: {{ base_image }}
+      script: >
+        #!/usr/bin/env bash
+
+        set -e
+
+        DIR=$(workspaces.workspace.path)
+
+        if [[ -d $DIR/source/upload ]]; then
+           echo "deleting existing directory $DIR/source/upload"
+           rm -rf $DIR/source/upload
+        fi
+
+        mkdir -m 775 $DIR/source/upload
+
+        if [[ ! -f $DIR/source/artifact.txt ]]; then
+           echo "file artifact.txt not found in $DIR/source - exiting"
+           exit 1
+        fi        
+
+        ARTIFACT=$(cat $DIR/source/artifact.txt)
+
+        cp $DIR/source/target/$ARTIFACT $DIR/source/upload
+

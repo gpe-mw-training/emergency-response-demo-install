@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_ocp_build_task_name }}
+spec:
+  workspaces:
+    - name: workspace
+  inputs:
+    params:
+      - name: buildConfig
+        description: "The build config to launch"
+  steps:
+    - name: oc-binary-build 
+      image: {{ openshift_cli_image }}
+      command: ["/usr/bin/oc"]
+      workingDir: $(workspaces.workspace.path)/source/upload
+      args:
+        - start-build
+        - -w
+        - -F
+        - $(inputs.params.buildConfig)
+        - --from-dir
+        - "."

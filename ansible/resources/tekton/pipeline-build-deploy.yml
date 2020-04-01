@@ -9,9 +9,6 @@ spec:
     - name: git-repo
       type: git
   params:
-    - name: artifact
-      description: "The artifact to deploy"
-      type: string
     - name: buildConfig
       description: "The build config to launch"
       type: string
@@ -35,14 +32,23 @@ spec:
         inputs:
           - name: source
             resource: git-repo
-    - name: maven-with-binary-build
+    - name: maven-build
       taskRef:
         name: {{ tekton_maven_build_task_name }}
       runAfter:
         - clone-source-to-workspace
       params:
-        - name: artifact
-          value: $(params.artifact)
+        - name: buildConfig
+          value: $(params.buildConfig)
+      workspaces:
+        - name: workspace
+          workspace: workspace
+    - name: ocp-build
+      taskRef:
+        name: {{ tekton_ocp_build_task_name }}
+      runAfter:
+        - maven-build
+      params:
         - name: buildConfig
           value: $(params.buildConfig)
       workspaces:
@@ -52,7 +58,7 @@ spec:
       taskRef:
         name: {{ tekton_deploy_task_name }}
       runAfter:
-        - maven-with-binary-build
+        - ocp-build
       params:
       - name: fromNamespace
         value: $(params.fromNamespace)

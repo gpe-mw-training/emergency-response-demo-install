@@ -12,7 +12,7 @@ spec:
         targetPath: source
   steps:
     - name: copy-source-to-workspace
-      image: {{ copy_source_image }}
+      image: {{ base_image }}
       script: |
         #!/usr/bin/env bash
 
