@@ -61,6 +61,31 @@ spec:
 
         cp $DIR/source/target/$(inputs.params.artifact) $DIR/source/upload
 
+    - name: extract-artifact-name
+      image: {{ maven_image }}
+      workingDir: $(workspaces.workspace.path)/source
+      script: >
+        #!/usr/bin/env bash 
+
+        set -e
+
+        DIR=$(workspaces.workspace.path)
+
+        if [[ -f $DIR/source/artifact.txt ]]; then
+          echo "deleting existing $DIR/source/artifact.txt"
+          rm -f $DIR/source/artifact.txt
+        fi
+
+        MAVEN_ARGS="-s $(workspaces.workspace.path)/.m2/settings.xml
+        -Dmaven.repo.local=$(workspaces.workspace.path)/.m2"
+
+        echo "$(mvn help:evaluate -Dexpression=project.artifactId -q
+        -DforceStdout $MAVEN_ARGS)-$(mvn help:evaluate
+        -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS).jar" >
+        $DIR/source/artifact.txt
+
+        echo $(cat $DIR/source/artifact.txt)
+
     - name: oc-binary-build 
       image: {{ openshift_cli_image }}
       command: ["/usr/bin/oc"]
@@ -72,5 +97,3 @@ spec:
         - $(inputs.params.buildConfig)
         - --from-dir
         - "."
-
-# TODO: artifactId: get from pom.xml, put into workspace file
