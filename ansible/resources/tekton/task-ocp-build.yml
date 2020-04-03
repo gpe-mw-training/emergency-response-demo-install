@@ -4,16 +4,22 @@ metadata:
   name: {{ tekton_ocp_build_task_name }}
 spec:
   workspaces:
-    - name: workspace
+    - name: source
   inputs:
     params:
+      - name: subdirectory
+        description: subdirectory in the workspace with the application source code
+        default: 'source'
+      - name: artifactDirectory
+        description: directory in the subdirectory with the application artifacts
+        default: 'upload'
       - name: buildConfig
         description: "The build config to launch"
   steps:
     - name: oc-binary-build 
       image: {{ openshift_cli_image }}
       command: ["/usr/bin/oc"]
-      workingDir: $(workspaces.workspace.path)/source/upload
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)/$(inputs.params.artifactDirectory)
       args:
         - start-build
         - -w

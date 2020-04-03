@@ -64,10 +64,14 @@ spec:
       runAfter:
         - maven-build
       params:
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+        - name: artifactDirectory
+          value: $(params.artifactDirectory)
         - name: buildConfig
           value: $(params.buildConfig)
       workspaces:
-        - name: workspace
+        - name: source
           workspace: workspace
     - name: deploy
       taskRef:
