@@ -4,18 +4,22 @@ metadata:
   name: {{ tekton_maven_build_task_name }}
 spec:
   workspaces:
-    - name: workspace
+    - name: source
   inputs:
     params:
-      - name: buildConfig
-        description: "The build config to launch"
+      - name: subdirectory
+        description: subdirectory in the workspace with the application source code
+        default: 'source'
+      - name: artifactDirectory
+        description: directory in the subdirectory with the application artifacts
+        default: 'upload'
   steps:
     - name: mvn-settings
-      image: {{ base_image }}
+      image: {{ maven_image }}
       script: |
         #!/usr/bin/env bash
       
-        DIR=$(workspaces.workspace.path)
+        DIR=$(workspaces.source.path)
         mkdir -p $DIR/.m2
         [[ -f $DIR/.m2/settings.xml ]] && \
         echo 'using existing $DIR/.m2/settings.xml' && \
@@ -39,58 +43,62 @@ spec:
 
     - name: package
       image: {{ maven_image }}
-      workingDir: $(workspaces.workspace.path)/source
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: >
-        /usr/bin/mvn package -s $(workspaces.workspace.path)/.m2/settings.xml
-        -Dmaven.repo.local=$(workspaces.workspace.path)/.m2
+        /usr/bin/mvn package -s $(workspaces.source.path)/.m2/settings.xml
+        -Dmaven.repo.local=$(workspaces.source.path)/.m2
 
     - name: artifact-name
       image: {{ maven_image }}
-      workingDir: $(workspaces.workspace.path)/source
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: >
         #!/usr/bin/env bash 
 
         set -e
 
-        DIR=$(workspaces.workspace.path)
+        DIR=$(workspaces.source.path)
+        SOURCE_DIR=$DIR/$(inputs.params.subdirectory)
 
-        if [[ -f $DIR/source/artifact.txt ]]; then
-          echo "deleting existing $DIR/source/artifact.txt"
-          rm -f $DIR/source/artifact.txt
+        if [[ -f $SOURCE_DIR/artifact.txt ]]; then
+          echo "deleting existing $SOURCE_DIR/artifact.txt"
+          rm -f $SOURCE_DIR/artifact.txt
         fi
 
-        MAVEN_ARGS="-s $(workspaces.workspace.path)/.m2/settings.xml
-        -Dmaven.repo.local=$(workspaces.workspace.path)/.m2"
+        MAVEN_ARGS="-s $(workspaces.source.path)/.m2/settings.xml
+        -Dmaven.repo.local=$(workspaces.source.path)/.m2"
 
         echo "$(mvn help:evaluate -Dexpression=project.artifactId -q
         -DforceStdout $MAVEN_ARGS)-$(mvn help:evaluate
         -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS).jar" >
-        $DIR/source/artifact.txt
+        $SOURCE_DIR/artifact.txt
 
-        echo $(cat $DIR/source/artifact.txt)
+        echo $(cat $SOURCE_DIR/artifact.txt)
 
     - name: copy-artifact
-      image: {{ base_image }}
+      image: {{ maven_image }}
       script: >
         #!/usr/bin/env bash
 
         set -e
 
-        DIR=$(workspaces.workspace.path)
+        DIR=$(workspaces.source.path)
 
-        if [[ -d $DIR/source/upload ]]; then
-           echo "deleting existing directory $DIR/source/upload"
-           rm -rf $DIR/source/upload
+        SOURCE_DIR=$DIR/$(inputs.params.subdirectory)
+        
+        ARTIFACT_DIR=$SOURCE_DIR/$(inputs.params.artifactDirectory)
+
+        if [[ -d $ARTIFACT_DIR ]]; then
+           echo "deleting existing directory $ARTIFACT_DIR"
+           rm -rf $ARTIFACT_DIR
         fi
 
-        mkdir -m 775 $DIR/source/upload
+        mkdir -m 775 $ARTIFACT_DIR
 
-        if [[ ! -f $DIR/source/artifact.txt ]]; then
-           echo "file artifact.txt not found in $DIR/source - exiting"
+        if [[ ! -f $SOURCE_DIR/artifact.txt ]]; then
+           echo "file artifact.txt not found in $SOURCE_DIR - exiting"
            exit 1
         fi        
 
-        ARTIFACT=$(cat $DIR/source/artifact.txt)
+        ARTIFACT=$(cat $SOURCE_DIR/artifact.txt)
 
-        cp $DIR/source/target/$ARTIFACT $DIR/source/upload
-
+        cp $SOURCE_DIR/target/$ARTIFACT $ARTIFACT_DIR

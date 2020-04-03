@@ -15,6 +15,8 @@ spec:
       description: subdirectory inside the workspace to clone the git repo into
     - name: deleteExisting
       description: clean out the contents of the workspace subdirectory (if it already exists) before cloning the repo there
+    - name: artifactDirectory
+      description: subdirectory within the source directory which contains the application artifacts
     - name: buildConfig
       description: "The build config to launch"
       type: string
@@ -49,10 +51,12 @@ spec:
       runAfter:
         - git-clone
       params:
-        - name: buildConfig
-          value: $(params.buildConfig)
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+        - name: artifactDirectory
+          value: $(params.artifactDirectory)
       workspaces:
-        - name: workspace
+        - name: source
           workspace: workspace
     - name: ocp-build
       taskRef:
