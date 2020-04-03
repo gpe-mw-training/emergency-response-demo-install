@@ -24,4 +24,12 @@
     namespace: "{{ namespace_tools }}"
     kind: task
 
+- name: "remove the {{ tekton_git_clone_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_git_clone_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+
 # TODO: remove pipeline runs

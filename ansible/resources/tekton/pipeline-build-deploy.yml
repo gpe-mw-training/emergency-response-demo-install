@@ -5,10 +5,16 @@ metadata:
 spec:
   workspaces:
     - name: workspace
-  resources:
-    - name: git-repo
-      type: git
   params:
+    - name: gitUrl
+      description: git url to clone
+      type: string
+    - name: gitRevision
+      description: git revision to checkout (branch, tag, sha, ref…)
+    - name: workspaceDirectory
+      description: subdirectory inside the workspace to clone the git repo into
+    - name: deleteExisting
+      description: clean out the contents of the workspace subdirectory (if it already exists) before cloning the repo there
     - name: buildConfig
       description: "The build config to launch"
       type: string
@@ -22,21 +28,26 @@ spec:
       description: the imagestream
       type: string
   tasks:
-    - name: clone-source-to-workspace
+    - name: git-clone
       taskRef:
-        name: {{ tekton_clone_to_workspace_task_name }}
+        name: {{ tekton_git_clone_workspace_name }}
       workspaces:
-        - name: workspace
+        - name: output
           workspace: workspace
-      resources:
-        inputs:
-          - name: source
-            resource: git-repo
+      params:
+        - name: url
+          value: $(params.gitUrl)
+        - name: revision
+          value: $(params.gitRevision)
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+        - name: deleteExisting
+          value: $(params.deleteExisting)
     - name: maven-build
       taskRef:
         name: {{ tekton_maven_build_task_name }}
       runAfter:
-        - clone-source-to-workspace
+        - git-clone
       params:
         - name: buildConfig
           value: $(params.buildConfig)

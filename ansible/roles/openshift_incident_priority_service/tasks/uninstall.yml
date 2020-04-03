@@ -32,13 +32,6 @@
     namespace: "{{ namespace_tools }}"
     kind: buildconfig
 
-- name: delete the {{ tekton_resource_git_name }} tekton resource
-  oc_obj:
-    state: absent openshift_cli }}"
-    name: "{{ tekton_resource_git_name }}"
-    namespace: "{{ namespace_tools }}"
-    kind: PipelineResource
-
 - name: delete the {{ tekton_workspace_pvc_name }} pvc in the {{ namespace_tools }} project
   oc_obj:
     state: absent

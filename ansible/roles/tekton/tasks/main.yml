@@ -1,19 +1,19 @@
 ---
 
-- name: "copy template for {{ tekton_clone_to_workspace_task_name }} task"
+- name: "copy template for {{ tekton_git_clone_workspace_name }} task"
   template:
-    src: "{{ resources_dir }}/{{ tekton_clone_to_workspace_task_template }}"
-    dest: "{{ work_dir }}/{{ tekton_clone_to_workspace_task_template }}"
+    src: "{{ resources_dir }}/{{ tekton_git_clone_workspace_template }}"
+    dest: "{{ work_dir }}/{{ tekton_git_clone_workspace_template }}"
 
-- name: "create the {{ tekton_clone_to_workspace_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_git_clone_workspace_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_clone_to_workspace_task_name }}"
+    name: "{{ tekton_git_clone_workspace_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
     files:
-      - "{{ work_dir }}/{{ tekton_clone_to_workspace_task_template }}"
+      - "{{ work_dir }}/{{ tekton_git_clone_workspace_template }}"
 
 - name: "copy template for {{ tekton_maven_build_task_name }} task"
   template:

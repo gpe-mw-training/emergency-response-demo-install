@@ -2,13 +2,21 @@
 apiVersion: tekton.dev/v1alpha1
 kind: PipelineRun
 metadata:
-  generateName: {{ tekton_pipeline_run_name }}-
+  generateName: '{{ tekton_pipeline_run_name }}-'
   labels:
     tekton.dev/pipeline: {{ tekton_build_deploy_pipeline_name }}
 spec:
   params:
+    - name: gitUrl
+      value: {{ incident_priority_service_git_repo }}
+    - name: gitRevision
+      value: {{ incident_priority_service_git_branch }}
+    - name: workspaceDirectory
+      value: source
+    - name: deleteExisting
+      value: 'true'
     - name: buildConfig
-      value: {{ application_name }}-binary
+      value: '{{ application_name }}-binary'
     - name: fromNamespace
       value: {{ namespace_tools }}
     - name: toNamespace
@@ -17,10 +25,6 @@ spec:
       value: {{ imagestream_name }}
   pipelineRef:
     name: {{ tekton_build_deploy_pipeline_name }}
-  resources:
-    - name: git-repo
-      resourceRef:
-        name: {{ application_name }}-git
   serviceAccountName: pipeline
   timeout: 1h0m0s
   workspaces:
