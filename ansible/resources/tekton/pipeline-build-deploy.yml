@@ -79,11 +79,16 @@ spec:
       runAfter:
         - ocp-build
       params:
-      - name: fromNamespace
-        value: $(params.fromNamespace)
-      - name: toNamespace
-        value: $(params.toNamespace)
-      - name: imageStream
-        value: $(params.imageStream)
-      - name: tag
-        value: latest
+        - name: fromNamespace
+          value: $(params.fromNamespace)
+        - name: toNamespace
+          value: $(params.toNamespace)
+        - name: imageStream
+          value: $(params.imageStream)
+        - name: tag
+          value: latest
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+      workspaces:
+        - name: source
+          workspace: workspace

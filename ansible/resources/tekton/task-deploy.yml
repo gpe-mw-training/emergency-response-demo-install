@@ -3,6 +3,8 @@ kind: Task
 metadata:
   name: {{ tekton_deploy_task_name }}
 spec:
+  workspaces:
+    - name: source
   inputs:
     params:
       - name: fromNamespace
@@ -14,12 +16,29 @@ spec:
       - name: tag
         description: the tag
         default: latest
-  steps:
+      - name: subdirectory
+        description: subdirectory in the workspace with the application source code
+        default: "source"
+      - name: commitId
+        description: name of the file to write the current commit Id to 
+        type: string
+        default: commit-id.txt
+  steps:    
     - name: tag-image
       image: {{ openshift_cli_image }}
       script: >
+        SOURCE_DIR="$(workspaces.source.path)/$(inputs.params.subdirectory)"
+        
+        RESULT_SHA_SHORT=$(cat $SOURCE_DIR/$(inputs.params.commitId))
+
+        oc tag
+        $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
+        $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$RESULT_SHA_SHORT
+        
         oc tag
         $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
         $(inputs.params.toNamespace)/$(inputs.params.imageStream):$(inputs.params.tag)
-    
-# TODO: commitID -> user workspaces + file?
+
+        oc tag
+        $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
+        $(inputs.params.toNamespace)/$(inputs.params.imageStream):$RESULT_SHA_SHORT
