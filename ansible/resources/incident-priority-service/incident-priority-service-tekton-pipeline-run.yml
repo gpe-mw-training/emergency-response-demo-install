@@ -17,14 +17,14 @@ spec:
       value: 'true'
     - name: artifactDirectory
       value: upload
-    - name: buildConfig
-      value: '{{ application_name }}-binary'
     - name: fromNamespace
       value: {{ namespace_tools }}
     - name: toNamespace
       value: {{ namespace }}
     - name: imageStream
       value: {{ imagestream_name }}
+    - name: image
+      value: {{ tekton_image }}
   pipelineRef:
     name: {{ tekton_build_deploy_pipeline_name }}
   serviceAccountName: pipeline

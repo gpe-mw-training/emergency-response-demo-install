@@ -24,15 +24,7 @@
     namespace: "{{ namespace }}"
     kind: route
 
-- name: delete buildconfig
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    name: "{{ buildconfig_name }}"
-    namespace: "{{ namespace_tools }}"
-    kind: buildconfig
-
-- name: delete the {{ tekton_workspace_pvc_name }} pvc in the {{ namespace_tools }} project
+- name: "delete the {{ tekton_workspace_pvc_name }} pvc in the {{ namespace_tools }} project"
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"

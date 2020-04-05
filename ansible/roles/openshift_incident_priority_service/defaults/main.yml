@@ -15,12 +15,6 @@ sso_configmap: sso-config
 
 application_properties: application-config.yaml
 
-application_image: redhat-openjdk18-openshift:1.7
-application_image_namespace: openshift
-
-buildconfig_name: "{{ application_name }}-binary"
-buildconfig_template: incident-priority-service-binary-buildconfig.yml
-
 imagestream_name: "{{ application_name }}"
 imagestream_template: incident-priority-service-imagestream.yml
 
@@ -28,12 +22,11 @@ image_imagestream_name: "{{ application_name }}"
 image_imagestream_template: incident-priority-service-image-is.yml
 
 tekton_build_deploy_pipeline_name: build-and-deploy
-tekton_resource_git_template: incident-priority-service-tekton-resource-git.yml
-tekton_resource_git_name: "{{ application_name }}-git"
 tekton_pipeline_run_template: incident-priority-service-tekton-pipeline-run.yml
 tekton_pipeline_run_name: "{{ application_name }}-run"
 tekton_workspace_pvc_template: incident-priority-service-tekton-pvc.yml
 tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 
 application_template: incident-priority-service.yml
 
