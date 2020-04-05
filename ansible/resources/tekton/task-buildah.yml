@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_buildah_task_name }}
+spec:
+  workspaces:
+    - name: source
+  inputs:
+    params:
+      - name: subdirectory
+        description: subdirectory in the workspace with the application source code
+        default: 'source'
+      - name: artifactDirectory
+        description: directory in the subdirectory with the application artifacts
+        default: 'upload'
+      - name: tlsVerify
+        description: verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+        default: 'false'
+      - name: image
+        description: reference of the image buildah will produce.
+  steps: 
+    - name: dockerfile
+      image: {{ base_image }}
+      script: |
+
+        SOURCE_DIR="$(workspaces.source.path)/$(inputs.params.subdirectory)"
+
+        ARTIFACT_DIR=$SOURCE_DIR/$(inputs.params.artifactDirectory)
+
+        cat > $ARTIFACT_DIR/Dockerfile <<EOF
+        FROM quay.io/btison/ubi8-java8:latest
+        COPY *.jar /deployments/app.jar
+        EOF
+
+    - name: build
+      image: {{ buildah_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)/$(inputs.params.artifactDirectory)
+      command:
+        - 'buildah'
+        - 'bud'
+        - '--tls-verify=$(inputs.params.tlsVerify)'
+        - '--layers'
+        - '-f'
+        - 'Dockerfile'
+        - '-t'
+        - '$(inputs.params.image)'
+        - '.'
+      volumeMounts:
+        - name: varlibcontainers
+          mountPath: /var/lib/containers
+      securityContext:
+        privileged: true
+
+    - name: push
+      image: {{ buildah_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)/$(inputs.params.artifactDirectory)
+      command:
+        - 'buildah'
+        - 'push'
+        - '--tls-verify=$(inputs.params.tlsVerify)'
+        - '$(inputs.params.image)'
+        - 'docker://$(inputs.params.image)'
+      volumeMounts:
+        - name: varlibcontainers
+          mountPath: /var/lib/containers
+      securityContext:
+        privileged: true
+       
+  volumes:
+    - name: varlibcontainers
+      emptyDir: {}
+

@@ -8,15 +8,16 @@ tekton_git_clone_workspace_template: task-git-clone.yml
 tekton_git_clone_workspace_name: git-clone
 tekton_ocp_build_task_template: task-ocp-build.yml
 tekton_ocp_build_task_name: ocp-build
+tekton_buildah_task_template: task-buildah.yml
+tekton_buildah_task_name: buildah-build-push
 
 base_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
+maven_image: quay.io/btison/maven:3.6.3
+openshift_cli_image: quay.io/btison/openshift-cli:latest
+buildah_image: quay.io/buildah/stable:v1.11.0
 
 nexus_service: "nexus.{{ namespace }}.svc"
 nexus_service_port: 8081
 nexus_service_path: content/groups/public
 nexus_url: "http://{{ nexus_service}}:{{ nexus_service_port }}"
 maven_mirror_url: "{{ nexus_url }}/{{ nexus_service_path }}"
-
-maven_image: quay.io/btison/maven:3.6.3
-
-openshift_cli_image: quay.io/btison/openshift-cli:latest

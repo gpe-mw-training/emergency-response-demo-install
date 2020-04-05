@@ -45,20 +45,20 @@
     files:
       - "{{ work_dir }}/{{ tekton_deploy_task_template }}"
 
-- name: "copy template for {{ tekton_ocp_build_task_name }} task"
+- name: "copy template for {{ tekton_buildah_task_name }} task"
   template:
-    src: "{{ resources_dir }}/{{ tekton_ocp_build_task_template }}"
-    dest: "{{ work_dir }}/{{ tekton_ocp_build_task_template }}"
+    src: "{{ resources_dir }}/{{ tekton_buildah_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_buildah_task_template }}"
 
-- name: "create the {{ tekton_ocp_build_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_buildah_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_ocp_build_task_name }}"
+    name: "{{ tekton_buildah_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
     files:
-      - "{{ work_dir }}/{{ tekton_ocp_build_task_template }}"
+      - "{{ work_dir }}/{{ tekton_buildah_task_template }}"
 
 - name: "copy template for {{ tekton_build_deploy_pipeline_name }} pipeline"
   template:

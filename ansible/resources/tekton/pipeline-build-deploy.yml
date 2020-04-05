@@ -11,14 +11,15 @@ spec:
       type: string
     - name: gitRevision
       description: git revision to checkout (branch, tag, sha, ref…)
+      type: string
     - name: workspaceDirectory
       description: subdirectory inside the workspace to clone the git repo into
+      type: string
     - name: deleteExisting
       description: clean out the contents of the workspace subdirectory (if it already exists) before cloning the repo there
+      type: string
     - name: artifactDirectory
       description: subdirectory within the source directory which contains the application artifacts
-    - name: buildConfig
-      description: "The build config to launch"
       type: string
     - name: fromNamespace
       description: the namespace we are tagging from
@@ -28,6 +29,9 @@ spec:
       type: string
     - name: imageStream
       description: the imagestream
+      type: string
+    - name: image
+      description: the image to build
       type: string
   tasks:
     - name: git-clone
@@ -58,9 +62,9 @@ spec:
       workspaces:
         - name: source
           workspace: workspace
-    - name: ocp-build
+    - name: buildah
       taskRef:
-        name: {{ tekton_ocp_build_task_name }}
+        name: {{ tekton_buildah_task_name }}
       runAfter:
         - maven-build
       params:
@@ -68,8 +72,8 @@ spec:
           value: $(params.workspaceDirectory)
         - name: artifactDirectory
           value: $(params.artifactDirectory)
-        - name: buildConfig
-          value: $(params.buildConfig)
+        - name: image
+          value: $(params.image)
       workspaces:
         - name: source
           workspace: workspace
@@ -77,7 +81,7 @@ spec:
       taskRef:
         name: {{ tekton_deploy_task_name }}
       runAfter:
-        - ocp-build
+        - buildah
       params:
         - name: fromNamespace
           value: $(params.fromNamespace)
