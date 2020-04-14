@@ -1,0 +1,17 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ tekton_subscription_name }}
+spec:
+  channel: '{{ tekton_subscription_channel }}'
+{% if tekton_operator_automatic_installplan_approval | d(True) | bool %}
+  installPlanApproval: Automatic
+{% else %}
+  installPlanApproval: Manual
+{% endif %}
+  name: {{ tekton_subscription_package_name }}
+  source: {{ tekton_catalog_source }}
+  sourceNamespace: {{ tekton_catalog_source_namespace }}
+{% if subscription_starting_csv | d("") | length > 0 %}
+  startingCSV: {{ tekton_subscription_starting_csv }}
+{% endif %}

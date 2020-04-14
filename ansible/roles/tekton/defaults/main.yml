@@ -1,3 +1,10 @@
+tekton_operator_package_name: openshift-pipelines-operator
+tekton_operator_namespace: openshift-operators
+tekton_operator_automatic_installplan_approval: false
+tekton_subscription_template: tekton-subscription.yml
+tekton_subscription_name: openshift-pipelines-operator
+tekton_subscription_starting_csv: ""
+
 tekton_maven_build_task_template: task-maven-build.yml
 tekton_maven_build_task_name: maven-build
 tekton_deploy_task_template: task-deploy.yml
