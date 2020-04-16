@@ -14,20 +14,18 @@ logging_configmap: incident-service-logging
 
 application_properties: application.properties
 
-application_image: redhat-openjdk18-openshift:1.7
-application_image_namespace: openshift
-
-buildconfig_name: "{{ application_name }}-binary"
-buildconfig_template: incident-service-binary-buildconfig.yml
-
 imagestream_name: "{{ application_name }}"
 imagestream_template: incident-service-imagestream.yml
 
 image_imagestream_name: "{{ application_name }}"
 image_imagestream_template: incident-service-image-is.yml
 
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: incident-service-pipeline.yml
+tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_pipeline_run_template: incident-service-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: incident-service-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 
 application_template: incident-service.yml
 
