@@ -1,0 +1,106 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_maven_publish_task_name }}
+spec:
+  workspaces:
+    - name: source
+  inputs:
+    params:
+      - name: subdirectory
+        description: subdirectory in the workspace with the application source code
+        default: 'source'
+  steps:
+    - name: mvn-settings
+      image: {{ maven_image }}
+      script: |
+        #!/usr/bin/env bash
+      
+        DIR=$(workspaces.source.path)
+        mkdir -p $DIR/.m2
+        [[ -f $DIR/.m2/settings.xml ]] && \
+        echo 'using existing $DIR/.m2/settings.xml' && \
+        cat $DIR/.m2/settings.xml && exit 0
+
+        cat > $DIR/.m2/settings.xml <<EOF
+        <settings>
+          <mirrors>
+            <mirror>
+              <id>mirror.default</id>
+              <name>mirror.default</name>
+              <url>{{ maven_mirror_url }}</url>
+              <mirrorOf>*</mirrorOf>
+            </mirror>
+          </mirrors>
+          <profiles>
+            <profile>
+              <activation>
+                <activeByDefault>true</activeByDefault>
+              </activation>
+              <repositories>
+                <repository>
+                  <id>nexus-public</id>
+                  <name>Nexus Public Repository</name>
+                  <url>{{ maven_mirror_url }}</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>always</updatePolicy>
+                  </snapshots>
+                </repository>
+              </repositories>
+            </profile>
+          </profiles>
+          <servers>
+            <server>
+              <id>releases</id>
+              <username>deployment</username>
+              <password>deployment123</password> 
+            </server>
+            <server>
+              <id>snapshots</id>
+              <username>deployment</username>
+              <password>deployment123</password>
+            </server>
+          </servers>
+        </settings>
+        EOF
+
+        [[ -f $DIR/.m2/settings.xml ]] && cat $DIR/.m2/settings.xml
+        [[ -f $DIR/.m2/settings.xml ]] || echo skipping settings 
+
+    - name: package
+      image: {{ maven_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
+      script: >
+        /usr/bin/mvn clean package -s $(workspaces.source.path)/.m2/settings.xml
+        -Dmaven.repo.local=$(workspaces.source.path)/.m2
+
+    - name: publish
+      image: {{ maven_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
+      script: |
+        #!/usr/bin/env bash
+
+        set -e
+
+        DIR=$(workspaces.source.path)
+
+        MAVEN_ARGS="-s $DIR/.m2/settings.xml -Dmaven.repo.local=$DIR/.m2"
+
+        VERSION=$(/usr/bin/mvn help:evaluate -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS)
+
+        echo "version: $VERSION"
+
+        if [[ "$VERSION" =~ "SNAPSHOT" ]]; 
+        then
+            /usr/bin/mvn install org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy -DskipTests=true \
+            -DaltDeploymentRepository=snapshots::{{ nexus_url }}/content/repositories/snapshots \
+            $MAVEN_ARGS
+        else
+            /usr/bin/mvn install org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy -DskipTests=true \
+            -DaltDeploymentRepository=releases::{{ nexus_url }}/content/repositories/releases \
+            $MAVEN_ARGS
+        fi

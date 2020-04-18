@@ -7,10 +7,14 @@ tekton_subscription_starting_csv: ""
 
 tekton_maven_build_task_template: task-maven-build.yml
 tekton_maven_build_task_name: maven-build
+tekton_maven_publish_task_template: task-maven-publish.yml
+tekton_maven_publish_task_name: maven-publish
 tekton_deploy_task_template: task-deploy.yml
 tekton_deploy_task_name: deploy
 tekton_build_deploy_pipeline_template: pipeline-build-deploy.yml
 tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_build_publish_pipeline_template: pipeline-build-publish.yml
+tekton_build_publish_pipeline_name: build-and-publish
 tekton_git_clone_workspace_template: task-git-clone.yml
 tekton_git_clone_workspace_name: git-clone
 tekton_ocp_build_task_template: task-ocp-build.yml

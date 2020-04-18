@@ -122,6 +122,21 @@
     files:
       - "{{ work_dir }}/{{ tekton_maven_build_task_template }}"
 
+- name: "copy template for {{ tekton_maven_publish_task_name }} task"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_maven_publish_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_maven_publish_task_template }}"
+
+- name: "create the {{ tekton_maven_publish_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_maven_publish_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+    files:
+      - "{{ work_dir }}/{{ tekton_maven_publish_task_template }}"
+
 - name: "copy template for {{ tekton_deploy_task_name }} task"
   template:
     src: "{{ resources_dir }}/{{ tekton_deploy_task_template }}"
@@ -166,3 +181,18 @@
     kind: pipeline
     files:
       - "{{ work_dir }}/{{ tekton_build_deploy_pipeline_template }}"
+
+- name: "copy template for {{ tekton_build_publish_pipeline_name }} pipeline"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_build_publish_pipeline_template }}"
+    dest: "{{ work_dir }}/{{ tekton_build_publish_pipeline_template }}"
+
+- name: "create the {{ tekton_build_publish_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_build_publish_pipeline_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pipeline
+    files:
+      - "{{ work_dir }}/{{ tekton_build_publish_pipeline_template }}"
