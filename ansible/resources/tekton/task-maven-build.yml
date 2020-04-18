@@ -35,6 +35,27 @@ spec:
               <mirrorOf>*</mirrorOf>
             </mirror>
           </mirrors>
+          <profiles>
+            <profile>
+              <activation>
+                <activeByDefault>true</activeByDefault>
+              </activation>
+              <repositories>
+                <repository>
+                  <id>nexus-public</id>
+                  <name>Nexus Public Repository</name>
+                  <url>{{ maven_mirror_url }}</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>always</updatePolicy>
+                  </snapshots>
+                </repository>
+              </repositories>
+            </profile>
+          </profiles>
         </settings>
         EOF
 
