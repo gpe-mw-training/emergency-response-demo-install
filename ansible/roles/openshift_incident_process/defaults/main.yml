@@ -2,8 +2,11 @@
 
 application_name: "{{ incident_process_application_name }}"
 
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: incident-process-pipeline.yml
+tekton_build_publish_pipeline_name: build-and-publish
+tekton_pipeline_run_template: incident-process-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: incident-process-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
 
 nexus_service: "{{ nexus_service_name }}.{{ namespace_tools }}.svc"
 nexus_service_port: 8081
