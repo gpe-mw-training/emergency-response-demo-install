@@ -16,15 +16,12 @@ fnames_configmap_key: FNames.txt
 
 logging_configmap: disaster-simulator-service-logging
 
-application_image: redhat-openjdk18-openshift:1.7
-application_image_namespace: openshift
-
-buildconfig_name: "{{ application_name }}-binary"
-buildconfig_template: disaster-simulator-service-binary-buildconfig.yml
-
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: disaster-simulator-service-pipeline.yml
-
+tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_pipeline_run_template: disaster-simulator-service-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: disaster-simulator-service-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 imagestream_name: "{{ application_name }}"
 imagestream_template: disaster-simulator-service-imagestream.yml
 
