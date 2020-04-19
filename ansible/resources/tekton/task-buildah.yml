@@ -16,6 +16,8 @@ spec:
       - name: tlsVerify
         description: verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
         default: 'false'
+      - name: baseImage
+        description: base image for Buildah build
       - name: image
         description: reference of the image buildah will produce.
   steps: 
@@ -28,7 +30,7 @@ spec:
         ARTIFACT_DIR=$SOURCE_DIR/$(inputs.params.artifactDirectory)
 
         cat > $ARTIFACT_DIR/Dockerfile <<EOF
-        FROM quay.io/btison/ubi8-java8:latest
+        FROM $(inputs.params.baseImage)
         COPY *.jar /deployments/app.jar
         EOF
 

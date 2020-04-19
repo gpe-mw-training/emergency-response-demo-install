@@ -19,6 +19,7 @@ tekton_pipeline_run_template: responder-service-tekton-pipeline-run.yml
 tekton_pipeline_run_name: "{{ application_name }}-run"
 tekton_workspace_pvc_template: responder-service-tekton-pvc.yml
 tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_base_image: 'quay.io/btison/ubi8-java8:latest'
 tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 
 imagestream_name: "{{ application_name }}"

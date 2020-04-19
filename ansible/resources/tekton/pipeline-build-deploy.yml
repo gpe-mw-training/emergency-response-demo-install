@@ -30,6 +30,9 @@ spec:
     - name: imageStream
       description: the imagestream
       type: string
+    - name: baseImage
+      description: the base image for the buildah build
+      type: string
     - name: image
       description: the image to build
       type: string
@@ -72,6 +75,8 @@ spec:
           value: $(params.workspaceDirectory)
         - name: artifactDirectory
           value: $(params.artifactDirectory)
+        - name: baseImage
+          value: $(params.baseImage)
         - name: image
           value: $(params.image)
       workspaces:

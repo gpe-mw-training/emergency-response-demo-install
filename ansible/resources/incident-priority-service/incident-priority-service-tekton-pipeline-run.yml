@@ -23,6 +23,8 @@ spec:
       value: {{ namespace }}
     - name: imageStream
       value: {{ imagestream_name }}
+    - name: baseImage
+      value: {{ tekton_base_image }}
     - name: image
       value: {{ tekton_image }}
   pipelineRef:
