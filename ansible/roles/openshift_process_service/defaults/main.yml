@@ -45,12 +45,6 @@ logging_style: dev
 
 service_account: process-service
 
-buildconfig_template: process-service-binary-buildconfig.yml
-buildconfig_name: "{{ application_name }}-binary"
-
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: process-service-pipeline.yml
-
 imagestream_template: process-service-imagestream.yml
 imagestream_name: "{{ application_name }}"
 
@@ -59,12 +53,13 @@ image_imagestream_template: process-service-image-is.yml
 
 application_template: process-service.yml
 
-openjdk_template: openjdk-imagestream.yml
-openjdk_imagestream_name: openjdk18-openshift
-openjdk_imagestream_tag: 1.6
-
-application_image: openjdk18-openshift:1.6
-application_image_namespace: openshift
+tekton_build_deploy_pipeline_name: build-and-deploy
+tekton_pipeline_run_template: process-service-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: process-service-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_base_image: 'quay.io/btison/ubi8-java8-mvn:latest'
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 
 incident_process_assignment_delay: PT20S
 
