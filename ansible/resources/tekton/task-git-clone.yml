@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: {{ tekton_git_clone_workspace_name }}
+  name: {{ tekton_git_clone_task_name }}
 spec:
   workspaces:
     - name: output

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: {{ tekton_buildah_jar_task_name }}
+  name: {{ tekton_buildah_quarkus_task_name }}
 spec:
   workspaces:
     - name: source
@@ -17,7 +17,7 @@ spec:
         description: verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
         default: 'false'
       - name: baseImage
-        description: base image for Buildah build
+        description: base image for Buildah build  
       - name: image
         description: reference of the image buildah will produce.
   steps: 
@@ -32,6 +32,7 @@ spec:
         cat > $ARTIFACT_DIR/Dockerfile <<EOF
         FROM $(inputs.params.baseImage)
         COPY *.jar /deployments/app.jar
+        COPY lib /deployments/lib
         EOF
 
     - name: build

@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1alpha1
 kind: Task
 metadata:
-  name: {{ tekton_maven_build_jar_task_name }}
+  name: {{ tekton_maven_build_quarkus_task_name }}
 spec:
   workspaces:
     - name: source
@@ -15,7 +15,7 @@ spec:
         default: 'upload'
   steps:
     - name: mvn-settings
-      image: {{ java8_maven_image }}
+      image: {{ java11_maven_image }}
       script: |
         #!/usr/bin/env bash
       
@@ -63,14 +63,14 @@ spec:
         [[ -f $DIR/.m2/settings.xml ]] || echo skipping settings 
 
     - name: package
-      image: {{ java8_maven_image }}
+      image: {{ java11_maven_image }}
       workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: >
         /usr/bin/mvn package -s $(workspaces.source.path)/.m2/settings.xml
         -Dmaven.repo.local=$(workspaces.source.path)/.m2
 
     - name: artifact-name
-      image: {{ java8_maven_image }}
+      image: {{ java11_maven_image }}
       workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: >
         #!/usr/bin/env bash 
@@ -90,13 +90,13 @@ spec:
 
         echo "$(mvn help:evaluate -Dexpression=project.artifactId -q
         -DforceStdout $MAVEN_ARGS)-$(mvn help:evaluate
-        -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS).jar" >
+        -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS)-runner.jar" >
         $SOURCE_DIR/artifact.txt
 
         echo $(cat $SOURCE_DIR/artifact.txt)
 
     - name: copy-artifact
-      image: {{ java8_maven_image }}
+      image: {{ java11_maven_image }}
       script: >
         #!/usr/bin/env bash
 
@@ -123,3 +123,5 @@ spec:
         ARTIFACT=$(cat $SOURCE_DIR/artifact.txt)
 
         cp $SOURCE_DIR/target/$ARTIFACT $ARTIFACT_DIR
+
+        cp -r $SOURCE_DIR/target/lib $ARTIFACT_DIR

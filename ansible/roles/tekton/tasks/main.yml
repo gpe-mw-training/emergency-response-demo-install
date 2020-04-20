@@ -92,35 +92,50 @@
   - tekton_csv.ansible_module_results.results[0].status.phase == "Succeeded"
   loop: "{{ tekton_csvs[0] }}"
 
-- name: "copy template for {{ tekton_git_clone_workspace_name }} task"
+- name: "copy template for {{ tekton_git_clone_task_name }} task"
   template:
-    src: "{{ resources_dir }}/{{ tekton_git_clone_workspace_template }}"
-    dest: "{{ work_dir }}/{{ tekton_git_clone_workspace_template }}"
+    src: "{{ resources_dir }}/{{ tekton_git_clone_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_git_clone_task_template }}"
 
-- name: "create the {{ tekton_git_clone_workspace_name }} tekton task in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_git_clone_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_git_clone_workspace_name }}"
+    name: "{{ tekton_git_clone_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
     files:
-      - "{{ work_dir }}/{{ tekton_git_clone_workspace_template }}"
+      - "{{ work_dir }}/{{ tekton_git_clone_task_template }}"
 
-- name: "copy template for {{ tekton_maven_build_task_name }} task"
+- name: "copy template for {{ tekton_maven_build_jar_task_name }} task"
   template:
-    src: "{{ resources_dir }}/{{ tekton_maven_build_task_template }}"
-    dest: "{{ work_dir }}/{{ tekton_maven_build_task_template }}"
+    src: "{{ resources_dir }}/{{ tekton_maven_build_jar_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_maven_build_jar_task_template }}"
 
-- name: "create the {{ tekton_maven_build_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_maven_build_jar_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_maven_build_task_name }}"
+    name: "{{ tekton_maven_build_jar_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
     files:
-      - "{{ work_dir }}/{{ tekton_maven_build_task_template }}"
+      - "{{ work_dir }}/{{ tekton_maven_build_jar_task_template }}"
+
+- name: "copy template for {{ tekton_maven_build_quarkus_task_name }} task"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_maven_build_quarkus_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_maven_build_quarkus_task_template }}"
+
+- name: "create the {{ tekton_maven_build_quarkus_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_maven_build_quarkus_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+    files:
+      - "{{ work_dir }}/{{ tekton_maven_build_quarkus_task_template }}"
 
 - name: "copy template for {{ tekton_maven_publish_task_name }} task"
   template:
@@ -152,35 +167,73 @@
     files:
       - "{{ work_dir }}/{{ tekton_deploy_task_template }}"
 
-- name: "copy template for {{ tekton_buildah_task_name }} task"
+- name: "copy template for {{ tekton_buildah_jar_task_name }} task"
   template:
-    src: "{{ resources_dir }}/{{ tekton_buildah_task_template }}"
-    dest: "{{ work_dir }}/{{ tekton_buildah_task_template }}"
+    src: "{{ resources_dir }}/{{ tekton_buildah_jar_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_buildah_jar_task_template }}"
 
-- name: "create the {{ tekton_buildah_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_buildah_jar_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_buildah_task_name }}"
+    name: "{{ tekton_buildah_jar_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
     files:
-      - "{{ work_dir }}/{{ tekton_buildah_task_template }}"
+      - "{{ work_dir }}/{{ tekton_buildah_jar_task_template }}"
+
+- name: "copy template for {{ tekton_buildah_quarkus_task_name }} task"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_buildah_quarkus_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_buildah_quarkus_task_template }}"
+
+- name: "create the {{ tekton_buildah_quarkus_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_buildah_quarkus_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+    files:
+      - "{{ work_dir }}/{{ tekton_buildah_quarkus_task_template }}"
 
 - name: "copy template for {{ tekton_build_deploy_pipeline_name }} pipeline"
   template:
     src: "{{ resources_dir }}/{{ tekton_build_deploy_pipeline_template }}"
-    dest: "{{ work_dir }}/{{ tekton_build_deploy_pipeline_template }}"
+    dest: "{{ work_dir }}/tekton-build-deploy-jar-pipeline.yml"
+  vars:
+    tekton_build_deploy_pipeline_name: "{{ tekton_build_deploy_jar_pipeline_name }}"
+    tekton_buildah_task_name: "{{ tekton_buildah_jar_task_name }}"
+    tekton_maven_build_task_name: "{{ tekton_maven_build_jar_task_name }}"
 
-- name: "create the {{ tekton_build_deploy_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+- name: "create the {{ tekton_build_deploy_jar_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
   oc_obj:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_build_deploy_pipeline_name }}"
+    name: "{{ tekton_build_deploy_jar_pipeline_name }}"
     namespace: "{{ namespace_tools }}"
     kind: pipeline
     files:
-      - "{{ work_dir }}/{{ tekton_build_deploy_pipeline_template }}"
+      - "{{ work_dir }}/tekton-build-deploy-jar-pipeline.yml"
+
+- name: "copy template for {{ tekton_build_deploy_quarkus_pipeline_name }} pipeline"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_build_deploy_pipeline_template }}"
+    dest: "{{ work_dir }}/tekton-build-deploy-quarkus-pipeline.yml"
+  vars:
+    tekton_build_deploy_pipeline_name: "{{ tekton_build_deploy_quarkus_pipeline_name }}"
+    tekton_buildah_task_name: "{{ tekton_buildah_quarkus_task_name }}"
+    tekton_maven_build_task_name: "{{ tekton_maven_build_quarkus_task_name }}"
+
+- name: "create the {{ tekton_build_deploy_quarkus_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_build_deploy_quarkus_pipeline_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pipeline
+    files:
+      - "{{ work_dir }}/tekton-build-deploy-quarkus-pipeline.yml"
 
 - name: "copy template for {{ tekton_build_publish_pipeline_name }} pipeline"
   template:

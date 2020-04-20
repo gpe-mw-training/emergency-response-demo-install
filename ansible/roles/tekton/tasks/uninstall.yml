@@ -1,10 +1,18 @@
 ---
 
-- name: "remove the {{ tekton_build_deploy_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+- name: "remove the {{ tekton_build_deploy_quarkus_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_build_deploy_pipeline_name }}"
+    name: "{{ tekton_build_deploy_quarkus_pipeline_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pipeline
+
+- name: "remove the {{ tekton_build_deploy_jar_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_build_deploy_jar_pipeline_name }}"
     namespace: "{{ namespace_tools }}"
     kind: pipeline
 
@@ -32,11 +40,19 @@
     namespace: "{{ namespace_tools }}"
     kind: task
 
-- name: "remove the {{ tekton_maven_build_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "remove the {{ tekton_maven_build_jar_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_maven_build_task_name }}"
+    name: "{{ tekton_maven_build_jar_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+
+- name: "remove the {{ tekton_maven_build_quarkus_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_maven_build_quarkus_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
 
@@ -48,11 +64,19 @@
     namespace: "{{ namespace_tools }}"
     kind: task
 
-- name: "remove the {{ tekton_buildah_task_name }} tekton task in the {{ namespace_tools }} project"
+- name: "remove the {{ tekton_buildah_jar_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ tekton_buildah_task_name }}"
+    name: "{{ tekton_buildah_jar_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+
+- name: "remove the {{ tekton_buildah_quarkus_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_buildah_quarkus_task_name }}"
     namespace: "{{ namespace_tools }}"
     kind: task
 

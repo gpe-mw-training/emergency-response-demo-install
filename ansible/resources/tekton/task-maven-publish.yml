@@ -12,7 +12,7 @@ spec:
         default: 'source'
   steps:
     - name: mvn-settings
-      image: {{ maven_image }}
+      image: {{ java8_maven_image }}
       script: |
         #!/usr/bin/env bash
       
@@ -72,14 +72,14 @@ spec:
         [[ -f $DIR/.m2/settings.xml ]] || echo skipping settings 
 
     - name: package
-      image: {{ maven_image }}
+      image: {{ java8_maven_image }}
       workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: >
         /usr/bin/mvn clean package -s $(workspaces.source.path)/.m2/settings.xml
         -Dmaven.repo.local=$(workspaces.source.path)/.m2
 
     - name: publish
-      image: {{ maven_image }}
+      image: {{ java8_maven_image }}
       workingDir: $(workspaces.source.path)/$(inputs.params.subdirectory)
       script: |
         #!/usr/bin/env bash
