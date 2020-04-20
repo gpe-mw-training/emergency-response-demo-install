@@ -75,3 +75,11 @@
     name: "{{ dw_application_name }}"
     namespace: "{{ namespace }}"
     kind: service
+
+- name: "delete the {{ tekton_workspace_pvc_name }} pvc in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_workspace_pvc_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pvc

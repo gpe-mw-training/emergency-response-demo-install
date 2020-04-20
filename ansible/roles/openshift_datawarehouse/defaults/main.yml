@@ -25,14 +25,13 @@ cm_name: datawarehouse
 application_properties: application.properties
 application_properties_resource: "{{ resources_dir }}/{{ application_properties }}"
 
-application_image: redhat-openjdk18-openshift:1.7
-application_image_namespace: openshift
-
-buildconfig_name: "{{ application_name }}-binary"
-buildconfig_template: datawarehouse-binary-buildconfig.yml
-
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: datawarehouse-pipeline.yml
+tekton_build_deploy_pipeline_name: build-and-deploy-quarkus
+tekton_pipeline_run_template: datawarehouse-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: datawarehouse-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_base_image: 'quay.io/btison/ubi8-java11:latest'
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"
 
 source_imagestream_name: "{{ application_name }}"
 source_imagestream_template: datawarehouse-source-imagestream.yml
