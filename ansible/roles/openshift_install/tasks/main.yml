@@ -232,8 +232,8 @@
     work_dir_name: datawarehouse
 
 - block:
-  - name: start pipeline incident service
-    shell: "{{ openshift_cli }} start-build {{ incident_service_quarkus_application_name }}-pipeline -n {{ namespace_tools }}"
+  # - name: start pipeline incident service
+  #   shell: "{{ openshift_cli }} start-build {{ incident_service_quarkus_application_name }}-pipeline -n {{ namespace_tools }}"
 
   - name: start pipeline mission service
     shell: "{{ openshift_cli }} start-build {{ mission_service_application_name }}-pipeline -n {{ namespace_tools }}"
