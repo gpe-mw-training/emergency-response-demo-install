@@ -39,7 +39,7 @@ spec:
         default: commit-id.txt
   steps:
     - name: clone
-      image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:latest
+      image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.11.3
       script: |
         CHECKOUT_DIR="$(workspaces.output.path)/$(inputs.params.subdirectory)"
         cleandir() {
@@ -67,7 +67,7 @@ spec:
           -submodules "$(inputs.params.submodules)" \
           -depth "$(inputs.params.depth)"
     - name: commit-id
-      image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:latest
+      image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.11.3
       script: |
         CHECKOUT_DIR="$(workspaces.output.path)/$(inputs.params.subdirectory)"
         cd "$CHECKOUT_DIR"
