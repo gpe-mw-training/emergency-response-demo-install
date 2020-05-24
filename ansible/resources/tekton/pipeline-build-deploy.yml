@@ -96,8 +96,8 @@ spec:
           value: $(params.imageStream)
         - name: tag
           value: latest
-        - name: subdirectory
-          value: $(params.workspaceDirectory)
+        - name: gitCommitId
+          value: "$(tasks.git-clone.results.git-commit-id)"
       workspaces:
         - name: source
           workspace: workspace

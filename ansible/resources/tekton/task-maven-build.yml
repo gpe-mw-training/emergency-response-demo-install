@@ -13,6 +13,9 @@ spec:
       - name: artifactDirectory
         description: directory in the subdirectory with the application artifacts
         default: 'upload'
+  results:
+    - name: maven-artifact
+      description: The name of the artifact built by this task
   steps:
     - name: mvn-settings
       image: {{ java8_maven_image }}
@@ -80,20 +83,13 @@ spec:
         DIR=$(workspaces.source.path)
         SOURCE_DIR=$DIR/$(inputs.params.subdirectory)
 
-        if [[ -f $SOURCE_DIR/artifact.txt ]]; then
-          echo "deleting existing $SOURCE_DIR/artifact.txt"
-          rm -f $SOURCE_DIR/artifact.txt
-        fi
-
         MAVEN_ARGS="-s $(workspaces.source.path)/.m2/settings.xml
         -Dmaven.repo.local=$(workspaces.source.path)/.m2"
 
         echo "$(mvn help:evaluate -Dexpression=project.artifactId -q
         -DforceStdout $MAVEN_ARGS)-$(mvn help:evaluate
-        -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS).jar" >
-        $SOURCE_DIR/artifact.txt
-
-        echo $(cat $SOURCE_DIR/artifact.txt)
+        -Dexpression=project.version -q -DforceStdout $MAVEN_ARGS).jar" | 
+        tee $(results.maven-artifact.path)
 
     - name: copy-artifact
       image: {{ java8_maven_image }}
@@ -115,11 +111,13 @@ spec:
 
         mkdir -m 775 $ARTIFACT_DIR
 
-        if [[ ! -f $SOURCE_DIR/artifact.txt ]]; then
-           echo "file artifact.txt not found in $SOURCE_DIR - exiting"
-           exit 1
-        fi        
+        MAVEN_ARTIFACT_PATH=$(results.maven-artifact.path)
 
-        ARTIFACT=$(cat $SOURCE_DIR/artifact.txt)
+        if [[ ! -f $MAVEN_ARTIFACT_PATH ]]; then
+           echo "file $MAVEN_ARTIFACT_PATH not found - exiting"
+           exit 1
+        fi
+
+        ARTIFACT=$(cat $MAVEN_ARTIFACT_PATH)
 
         cp $SOURCE_DIR/target/$ARTIFACT $ARTIFACT_DIR

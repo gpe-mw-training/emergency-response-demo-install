@@ -33,10 +33,9 @@ spec:
         description: clean out the contents of the repo's destination directory (if it already exists) before trying to clone the repo there
         type: string
         default: 'false'
-      - name: commitId
-        description: name of the file to write the current commit Id to 
-        type: string
-        default: commit-id.txt
+  results:
+    - name: git-commit-id
+      description: The git commit id at HEAD
   steps:
     - name: clone
       image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.11.3
@@ -79,6 +78,4 @@ spec:
         fi
         RESULT_SHA_SHORT=$(echo -n $RESULT_SHA | awk '{print substr($RESULT_SHA,1,9);exit}')
         
-        echo -n "$RESULT_SHA_SHORT" > $CHECKOUT_DIR/$(inputs.params.commitId)
-
-        echo $(cat $CHECKOUT_DIR/$(inputs.params.commitId))
+        echo $RESULT_SHA_SHORT | tee $(results.git-commit-id.path)

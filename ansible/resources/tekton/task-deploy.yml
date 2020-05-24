@@ -16,24 +16,17 @@ spec:
       - name: tag
         description: the tag
         default: latest
-      - name: subdirectory
-        description: subdirectory in the workspace with the application source code
-        default: "source"
-      - name: commitId
-        description: name of the file to write the current commit Id to 
+      - name: gitCommitId
+        description: the git commit id 
         type: string
-        default: commit-id.txt
+
   steps:    
     - name: tag-image
       image: {{ openshift_cli_image }}
       script: >
-        SOURCE_DIR="$(workspaces.source.path)/$(inputs.params.subdirectory)"
-        
-        RESULT_SHA_SHORT=$(cat $SOURCE_DIR/$(inputs.params.commitId))
-
         oc tag
         $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
-        $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$RESULT_SHA_SHORT
+        $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.gitCommitId)
         
         oc tag
         $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
@@ -41,4 +34,4 @@ spec:
 
         oc tag
         $(inputs.params.fromNamespace)/$(inputs.params.imageStream):$(inputs.params.tag) 
-        $(inputs.params.toNamespace)/$(inputs.params.imageStream):$RESULT_SHA_SHORT
+        $(inputs.params.toNamespace)/$(inputs.params.imageStream):$(inputs.params.gitCommitId)
