@@ -197,6 +197,36 @@
     files:
       - "{{ work_dir }}/{{ tekton_buildah_quarkus_task_template }}"
 
+- name: "copy template for {{ tekton_s2i_build_nodejs_task_name }} task"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_s2i_build_nodejs_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_s2i_build_nodejs_task_template }}"
+
+- name: "create the {{ tekton_s2i_build_nodejs_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_s2i_build_nodejs_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+    files:
+      - "{{ work_dir }}/{{ tekton_s2i_build_nodejs_task_template }}"
+
+- name: "copy template for {{ tekton_buildah_s2i_task_name }} task"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_buildah_s2i_task_template }}"
+    dest: "{{ work_dir }}/{{ tekton_buildah_s2i_task_template }}"
+
+- name: "create the {{ tekton_buildah_s2i_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_buildah_s2i_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+    files:
+      - "{{ work_dir }}/{{ tekton_buildah_s2i_task_template }}"
+
 - name: "copy template for {{ tekton_build_deploy_pipeline_name }} pipeline"
   template:
     src: "{{ resources_dir }}/{{ tekton_build_deploy_pipeline_template }}"
@@ -249,3 +279,19 @@
     kind: pipeline
     files:
       - "{{ work_dir }}/{{ tekton_build_publish_pipeline_template }}"
+
+- name: "copy template for {{ tekton_s2i_deploy_nodejs_pipeline_name }} pipeline"
+  template:
+    src: "{{ resources_dir }}/{{ tekton_s2i_deploy_nodejs_pipeline_template }}"
+    dest: "{{ work_dir }}/{{ tekton_s2i_deploy_nodejs_pipeline_template }}"
+
+- name: "create the {{ tekton_s2i_deploy_nodejs_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_s2i_deploy_nodejs_pipeline_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pipeline
+    files:
+      - "{{ work_dir }}/{{ tekton_s2i_deploy_nodejs_pipeline_template }}"
+

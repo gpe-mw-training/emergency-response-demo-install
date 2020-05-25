@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_buildah_s2i_task_name }}
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: sourceDirectory
+      description: directory in the workspace with the S2I generated input
+      default: 'gen-source'
+    - name: tlsVerify
+      description: verify the TLS on the registry endpoint (for push/pull to a non-TLS registry)
+      default: 'false'
+    - name: image
+      description: reference of the image buildah will produce.
+  stepTemplate:
+    resources:
+      limits:
+        memory: 3Gi
+  steps:
+    - name: build
+      image: {{ s2i_buildah_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.sourceDirectory)
+      command:
+        - 'buildah'
+        - 'bud'
+        - '--tls-verify=$(inputs.params.tlsVerify)'
+        - '--layers'
+        - '-f'
+        - '$(workspaces.source.path)/$(inputs.params.sourceDirectory)/Dockerfile.gen'
+        - '-t'
+        - '$(inputs.params.image)'
+        - '.'      
+      volumeMounts:
+        - name: varlibcontainers
+          mountPath: /var/lib/containers
+      securityContext:
+        privileged: true
+    - name: push
+      image: {{ s2i_buildah_image }}
+      workingDir: $(workspaces.source.path)/$(inputs.params.sourceDirectory)
+      command:
+        - 'buildah'
+        - 'push'
+        - '--tls-verify=$(inputs.params.tlsVerify)'
+        - '$(inputs.params.image)'
+        - 'docker://$(inputs.params.image)'
+      volumeMounts:
+        - name: varlibcontainers
+          mountPath: /var/lib/containers
+      securityContext:
+        privileged: true
+  volumes:
+    - name: varlibcontainers
+      emptyDir: {}

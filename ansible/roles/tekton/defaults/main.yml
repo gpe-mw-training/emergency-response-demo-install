@@ -13,11 +13,15 @@ tekton_maven_publish_task_template: task-maven-publish.yml
 tekton_maven_publish_task_name: maven-publish
 tekton_deploy_task_template: task-deploy.yml
 tekton_deploy_task_name: deploy
+tekton_s2i_build_nodejs_task_template: task-s2i-build-nodejs.yml 
+tekton_s2i_build_nodejs_task_name: s2i-build-nodejs
 tekton_build_deploy_pipeline_template: pipeline-build-deploy.yml
 tekton_build_deploy_jar_pipeline_name: build-and-deploy
 tekton_build_deploy_quarkus_pipeline_name: build-and-deploy-quarkus
 tekton_build_publish_pipeline_template: pipeline-build-publish.yml
 tekton_build_publish_pipeline_name: build-and-publish
+tekton_s2i_deploy_nodejs_pipeline_template: pipeline-s2i-deploy-nodejs.yml
+tekton_s2i_deploy_nodejs_pipeline_name: s2i-and-deploy-nodejs
 tekton_git_clone_task_template: task-git-clone.yml
 tekton_git_clone_task_name: git-clone
 tekton_ocp_build_task_template: task-ocp-build.yml
@@ -26,12 +30,16 @@ tekton_buildah_jar_task_template: task-buildah.yml
 tekton_buildah_jar_task_name: buildah-build-push
 tekton_buildah_quarkus_task_template: task-buildah-quarkus.yml
 tekton_buildah_quarkus_task_name: buildah-build-push-quarkus
+tekton_buildah_s2i_task_template: task-buildah-s2i.yml
+tekton_buildah_s2i_task_name: buildah-s2i
 
 base_image: registry.access.redhat.com/ubi8/ubi-minimal:latest
 java8_maven_image: quay.io/btison/maven:3.6.3
 java11_maven_image: quay.io/btison/java11-maven:3.6.3
 openshift_cli_image: quay.io/btison/openshift-cli:latest
 buildah_image: quay.io/buildah/stable:v1.11.0
+s2i_build_image: registry.redhat.io/ocp-tools-43-tech-preview/source-to-image-rhel8
+s2i_buildah_image: registry.redhat.io/rhel8/buildah
 
 nexus_service: "nexus.{{ namespace }}.svc"
 nexus_service_port: 8081

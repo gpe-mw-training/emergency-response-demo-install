@@ -1,5 +1,13 @@
 ---
 
+- name: "remove the {{ tekton_s2i_deploy_nodejs_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_s2i_deploy_nodejs_pipeline_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pipeline
+
 - name: "remove the {{ tekton_build_deploy_quarkus_pipeline_name }} tekton pipeline in the {{ namespace_tools }} project"
   oc_obj:
     state: absent
@@ -24,6 +32,22 @@
     namespace: "{{ namespace_tools }}"
     kind: pipeline
 
+- name: "remove the {{ tekton_buildah_s2i_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_buildah_s2i_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+
+- name: "remove the {{ tekton_s2i_build_nodejs_task_name }} tekton task in the {{ namespace_tools }} project"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_s2i_build_nodejs_task_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: task
+  
 - name: "remove the {{ tekton_deploy_task_name }} tekton task in the {{ namespace_tools }} project"
   oc_obj:
     state: absent

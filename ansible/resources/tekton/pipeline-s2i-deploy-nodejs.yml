@@ -1,0 +1,89 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Pipeline
+metadata:
+  name: {{ tekton_s2i_deploy_nodejs_pipeline_name }}
+spec:
+  workspaces:
+    - name: workspace
+  params:
+    - name: gitUrl
+      description: git url to clone
+      type: string
+    - name: gitRevision
+      description: git revision to checkout (branch, tag, sha, ref…)
+      type: string
+    - name: workspaceDirectory
+      description: subdirectory inside the workspace to clone the git repo into
+      type: string
+    - name: deleteExisting
+      description: clean out the contents of the workspace subdirectory (if it already exists) before cloning the repo there
+      type: string
+    - name: image
+      description: the image to build
+      type: string
+    - name: fromNamespace
+      description: the namespace we are tagging from
+      type: string
+    - name: toNamespace
+      description: the namespace we are tagging to
+      type: string
+    - name: imageStream
+      description: the imagestream
+      type: string
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: {{ tekton_git_clone_task_name }}
+      workspaces:
+        - name: output
+          workspace: workspace
+      params:
+        - name: url
+          value: $(params.gitUrl)
+        - name: revision
+          value: $(params.gitRevision)
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+        - name: deleteExisting
+          value: $(params.deleteExisting)
+    - name: s2i-build
+      taskRef:
+        name: {{ tekton_s2i_build_nodejs_task_name }}
+      runAfter:
+        - git-clone
+      params:
+        - name: subdirectory
+          value: $(params.workspaceDirectory)
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: buildah
+      taskRef:
+        name: {{ tekton_buildah_s2i_task_name }}
+      runAfter:
+        - s2i-build
+      params:
+        - name: image
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: workspace
+    - name: deploy
+      taskRef:
+        name: {{ tekton_deploy_task_name }}
+      runAfter:
+        - buildah
+      params:
+        - name: fromNamespace
+          value: $(params.fromNamespace)
+        - name: toNamespace
+          value: $(params.toNamespace)
+        - name: imageStream
+          value: $(params.imageStream)
+        - name: tag
+          value: latest
+        - name: gitCommitId
+          value: $(tasks.git-clone.results.git-commit-id)
+      workspaces:
+        - name: source
+          workspace: workspace

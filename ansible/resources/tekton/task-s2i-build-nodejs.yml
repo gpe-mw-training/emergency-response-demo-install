@@ -1,0 +1,60 @@
+apiVersion: tekton.dev/v1alpha1
+kind: Task
+metadata:
+  name: {{ tekton_s2i_build_nodejs_task_name }}
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: subdirectory
+      description: subdirectory in the workspace with the application source code
+      default: 'source'
+    - name: contextPath
+      description:
+      default: '.'
+    - name: version
+      description: the version of nodejs
+      default: '10'
+    - name: deleteExisting
+      description: clean out the contents of the s2i directory before executing a s2i build
+      type: string
+      default: 'false'
+    - name: target
+      description: target directory in the workspace for the s2i build
+      default: 'gen-source'
+  steps:
+    - name: s2i-build
+      image: {{ s2i_build_image }}
+      workingDir: $(workspaces.source.path)
+      script: >
+        #!/usr/bin/env bash
+
+        CONTEXT_DIR=$(workspaces.source.path)/$(inputs.params.subdirectory)
+
+        S2I_DIR=$(workspaces.source.path)/$(inputs.params.target)
+
+        cleandir() {
+          # Delete any existing contents of the s2i directory if it exists.
+          if [[ -d "$S2I_DIR" ]] ; then
+            # Delete non-hidden files and directories
+            rm -rf "$S2I_DIR"/*
+            # Delete files and directories starting with . but excluding ..
+            rm -rf "$S2I_DIR"/.[!.]*
+            # Delete files and directories starting with .. plus any other character
+            rm -rf "$S2I_DIR"/..?*
+          fi
+        }
+
+        if [[ "$(inputs.params.deleteExisting)" == "true" ]] ; then
+          cleandir
+        fi
+
+        if [[ $(inputs.params.contextPath) != "." ]]; then
+            CONTEXT_DIR=$CONTEXT_DIR/$(inputs.params.contextPath)   
+        fi
+
+        echo $CONTEXT_DIR
+
+        s2i build $CONTEXT_DIR
+        registry.access.redhat.com/rhscl/nodejs-$(params.version)-rhel7
+        --as-dockerfile $S2I_DIR/Dockerfile.gen
