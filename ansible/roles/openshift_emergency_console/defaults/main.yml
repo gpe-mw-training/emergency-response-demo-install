@@ -12,12 +12,6 @@ resources_requests_memory: 100Mi
 application_image: nodejs:10
 application_image_namespace: openshift
 
-buildconfig_name: "{{ application_name }}"
-buildconfig_template: emergency-console-buildconfig.yml
-
-pipeline_buildconfig_name: "{{ application_name }}-pipeline"
-pipeline_buildconfig_template: emergency-console-pipeline.yml
-
 imagestream_name: "{{ application_name }}"
 imagestream_template: emergency-console-imagestream.yml
 
@@ -44,3 +38,10 @@ kafka_topic_incident_event: topic-incident-event
 kafka_topic_incident_command: topic-incident-command
 kafka_topic_responder_event: topic-responder-event
 kafka_topic_responder_command: topic-responder-command
+
+tekton_build_deploy_pipeline_name: s2i-and-deploy-nodejs
+tekton_pipeline_run_template: emergency-console-tekton-pipeline-run.yml
+tekton_pipeline_run_name: "{{ application_name }}-run"
+tekton_workspace_pvc_template: emergency-console-tekton-pvc.yml
+tekton_workspace_pvc_name: "tekton-{{ application_name }}"
+tekton_image: "image-registry.openshift-image-registry.svc:5000/{{ namespace_tools }}/{{ application_name }}:latest"

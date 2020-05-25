@@ -6,21 +6,6 @@
 - set_fact:
     generic_secret: "{{ lookup('password', work_dir + '/generic chars=ascii_letters,digits length=8') }}"
 
-- name: copy build config template
-  template:
-    src: "{{ resources_dir }}/{{ buildconfig_template }}"
-    dest: "{{ work_dir }}/{{ buildconfig_template }}"
-
-- name: create build config in the {{ namespace }} namespace
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    namespace: "{{ namespace }}"
-    kind: buildconfig
-    name: "{{ buildconfig_name }}"
-    files:
-      - "{{ work_dir }}/{{ buildconfig_template }}"
-
 - name: copy imagestream template
   template:
     src: "{{ resources_dir }}/{{ imagestream_template }}"
@@ -46,15 +31,30 @@
     files:
       - "{{ work_dir }}/{{ imagestream_template }}"
 
-- name: give edit permissions to system:serviceaccount:{{ namespace_tools }}:jenkins in project {{ namespace }}
+- name: give edit permissions to system:serviceaccount:{{ namespace_tools }}:pipeline in project {{ namespace }}
   oc_adm_policy_user:
     state: present
     oc_binary: "{{ openshift_cli }}"
-    rolebinding_name: jenkins-edit
+    rolebinding_name: pipeline-edit
     namespace: "{{ namespace }}"
     resource_kind: role
-    user: "system:serviceaccount:{{ namespace_tools }}:jenkins"
+    user: "system:serviceaccount:{{ namespace_tools }}:pipeline"
     resource_name: edit
+
+- name: copy tekton pvc template
+  template:
+    src: "{{ resources_dir }}/{{ tekton_workspace_pvc_template }}"
+    dest: "{{ work_dir }}/{{ tekton_workspace_pvc_template }}"
+
+- name: "create the {{ tekton_workspace_pvc_name }} pvc in the {{ namespace_tools }} project"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tekton_workspace_pvc_name }}"
+    namespace: "{{ namespace_tools }}"
+    kind: pvc
+    files:
+      - "{{ work_dir }}/{{ tekton_workspace_pvc_template }}"
 
 - set_fact:
     application_image_tag: "latest"
