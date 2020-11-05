@@ -10,7 +10,6 @@ resources_requests_cpu: 100m
 resources_requests_memory: 200Mi
 
 application_configmap: responder-service
-logging_configmap: responder-service-logging
 
 application_properties: application.properties
 
@@ -31,19 +30,12 @@ image_imagestream_template: responder-service-image-is.yml
 
 application_template: responder-service.yml
 
-narayana_pool_max_total: 20
-
 kafka_bootstrap_service: "{{ kafka_cluster }}-kafka-bootstrap.{{ namespace_kafka_cluster }}.svc"
 kafka_bootstrap_port: 9092
 kafka_bootstrap_address: "{{ kafka_bootstrap_service }}:{{ kafka_bootstrap_port }}"
 kafka_groupid: responder-service
-kafka_consumer_concurrency: 5
 
 kafka_responder_command_topic: topic-responder-command
 kafka_responder_update_location_event_topic: topic-responder-location-update
 kafka_responder_event_topic: topic-responder-event
 
-logging_style: dev
-
-prometheus_endpoint_path: "/actuator/prometheus"
-prometheus_endpoint_port: 8080
