@@ -62,6 +62,12 @@ kafka_connect_image=quay.io/emergencyresponsedemo/strimzi-debezium-postgresql:1.
 find_service_image=quay.io/emergencyresponsedemo/find-service
 find_service_image_tag=2.8
 
+kafka_consumer_app_image=quay.io/btison/kafka-consumer-app
+kafka_consumer_app_tag=latest
+
+kafka_producer_app_image=quay.io/btison/kafka-producer-app
+kafka_producer_app_tag=latest
+
 # source repos
 incident_service_git_repo=https://github.com/Emergency-Response-Demo/incident-service-quarkus.git
 incident_service_git_branch=master
