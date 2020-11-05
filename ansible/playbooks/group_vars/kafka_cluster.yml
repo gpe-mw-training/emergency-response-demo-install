@@ -1,6 +1,6 @@
 ---
 
-namespace_strimzi_operator: kafka-operator-erd
+namespace_strimzi_operator: "{{ project_admin }}-{{ project_name }}"
 namespace_kafka_cluster: "{{ project_admin }}-{{ project_name }}"
 
 strimzi_cluster_operator: strimzi-cluster-operator
@@ -16,6 +16,4 @@ kafka_topics: >
    {"name": "topic-mission-event", "partitions": "15", "replicas": "3", "config": "{}"},
    {"name": "topic-responder-command", "partitions": "15", "replicas": "3", "config": "{}"},
    {"name": "topic-responder-event", "partitions": "15", "replicas": "3", "config": "{}"},
-   {"name": "topic-responder-location-update", "partitions": "15", "replicas": "3", "config": "{}"},
-   {"name": "responder-simulator-kstreams-responder-store-changelog", "partitions": "15", "replicas": "3", 
-   "config": {"cleanup.policy": "compact", "message.timestamp.type": "CreateTime"}}]
+   {"name": "topic-responder-location-update", "partitions": "15", "replicas": "3", "config": "{}"}]
