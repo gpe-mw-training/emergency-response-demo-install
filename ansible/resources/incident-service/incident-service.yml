@@ -8,7 +8,6 @@ items:
     labels:
       app: {{ application_name }}
       expose: "true"
-      monitoring: prometheus-actuator
     name: {{ application_name }}
   spec:
     ports:
@@ -59,7 +58,7 @@ items:
                   fieldPath: metadata.namespace
             - name: JAVA_OPTIONS
               value: >
-                -Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=prometheus -Dquarkus.kubernetes-config.config-maps={{ application_configmap }} -Dquarkus.kubernetes-config.enabled=true
+                -Dquarkus.kubernetes-config.config-maps={{ application_configmap }} -Dquarkus.kubernetes-config.enabled=true
             imagePullPolicy: IfNotPresent
             name: {{ application_name }}
             ports:
@@ -72,17 +71,17 @@ items:
                 path: /health/live
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 30
+              initialDelaySeconds: 10
               periodSeconds: 30
               timeoutSeconds: 3
             readinessProbe:
               failureThreshold: 5
               httpGet:
-                path: /health/live
+                path: /health/ready
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 30
-              periodSeconds: 30
+              initialDelaySeconds: 3
+              periodSeconds: 10
               timeoutSeconds: 3
             resources:
               limits:
@@ -95,9 +94,6 @@ items:
               privileged: false
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
-            volumeMounts:
-              - mountPath: /app/logging
-                name: logging
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -105,11 +101,6 @@ items:
         serviceAccount: {{ service_account }}
         serviceAccountName: {{ service_account }}
         terminationGracePeriodSeconds: 30
-        volumes:
-          - configMap:
-              defaultMode: 420
-              name: {{ logging_configmap }}
-            name: logging
     triggers:
       - type: ConfigChange
       - imageChangeParams:

@@ -5,12 +5,11 @@ application_name: "{{ incident_service_application_name }}"
 service_account: incident-service
 
 resources_limits_cpu: 500m
-resources_limits_memory: 250Mi
+resources_limits_memory: 500Mi
 resources_requests_cpu: 100m
 resources_requests_memory: 200Mi
 
 application_configmap: incident-service
-logging_configmap: incident-service-logging
 
 application_properties: application.properties
 
@@ -35,15 +34,7 @@ kafka_bootstrap_service: "{{ kafka_cluster }}-kafka-bootstrap.{{ namespace_kafka
 kafka_bootstrap_port: 9092
 kafka_bootstrap_address: "{{ kafka_bootstrap_service }}:{{ kafka_bootstrap_port }}"
 kafka_groupid: incident-service
-kafka_consumer_concurrency: 5
 
-kafka_incident_reported_event_topic: topic-incident-event
-kafka_incident_updated_event_topic: topic-incident-event
+kafka_incident_event_topic: topic-incident-event
 kafka_update_incident_command_topic: topic-incident-command
 
-narayana_pool_max_total: 20
-
-logging_style: dev
-
-prometheus_endpoint_path: "/actuator/prometheus"
-prometheus_endpoint_port: 8080
