@@ -5,9 +5,9 @@ application_name: "{{ responder_service_application_name }}"
 service_account: responder-service
 
 resources_limits_cpu: 500m
-resources_limits_memory: 1536Mi
+resources_limits_memory: 250Mi
 resources_requests_cpu: 100m
-resources_requests_memory: 256Mi
+resources_requests_memory: 200Mi
 
 application_configmap: responder-service
 logging_configmap: responder-service-logging
