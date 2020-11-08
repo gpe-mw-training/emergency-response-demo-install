@@ -1,41 +1,46 @@
 ---
 
-- name: delete {{ datagrid_application_name }}-ping service
+- name: "delete infinispan secret"
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    name: "{{ datagrid_application_name }}-ping"
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_connect_secret }}"
     namespace: "{{ namespace }}"
-    kind: service
+    kind: secret  
 
-- name: delete {{ datagrid_application_name }} service
+- name: "delete infinispan"
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
+    oc_binary: "{{ openshift_cli }}"
     name: "{{ datagrid_application_name }}"
     namespace: "{{ namespace }}"
-    kind: service
+    kind: infinispan
 
-- name: delete {{ datagrid_application_name }} statefulset
+- name: "delete subscription {{ datagrid_subscription_name }}"
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    name: "{{ datagrid_application_name }}"
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_subscription_name }}"
     namespace: "{{ namespace }}"
-    kind: statefulset
+    kind: subscription
 
-- name: delete {{ datagrid_application_name }} secret
+- name: "delete operator group {{ datagrid_operator_package_name }}"
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    name: "{{ datagrid_application_name }}"
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_operatorgroup_name }}"
     namespace: "{{ namespace }}"
-    kind: secret
+    kind: operatorgroup
 
-- name: delete service-certs secret
+- name: get currentCSV for default channel
+  shell: |-
+    {{ openshift_cli }} get packagemanifests {{ datagrid_operator_package_name }} -o jsonpath='{.status.channels[?(@.name == "{{ datagrid_defaultchannel }}")].currentCSV}'
+  register: datagrid_currentCSV
+
+- name: "delete datagrid CSV {{ datagrid_currentCSV.stdout }} "
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    name: "service-certs"
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_currentCSV.stdout }}"
     namespace: "{{ namespace }}"
-    kind: secret
+    kind: csv
