@@ -7,8 +7,6 @@ items:
   metadata:
     labels:
       app: {{ application_name }}
-      monitoring: prometheus
-      expose: "true"
     name: {{ application_name }}
   spec:
     ports:
@@ -21,23 +19,6 @@ items:
       app: {{ application_name }}
     sessionAffinity: None
     type: ClusterIP
-- apiVersion: route.openshift.io/v1
-  kind: Route
-  metadata:
-    labels:
-      app: {{ application_name }}
-      expose: 'true'
-      monitoring: prometheus
-    name: {{ application_name }}
-  spec:
-    host: {{ responder_simulator_service_application_name }}.{{ ocp_domain }}
-    port:
-      targetPort: http
-    to:
-      kind: Service
-      name: {{ application_name }}
-      weight: 100
-    wildcardPolicy: None
 - apiVersion: apps.openshift.io/v1
   kind: DeploymentConfig
   metadata:
@@ -73,16 +54,6 @@ items:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
-            - name: JAVA_OPTIONS
-              value: >
-                -Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory
-                -Dlogback.configurationFile=/app/logging/logback.xml
-            - name: AB_JOLOKIA_OFF
-              value: "true"
-            - name: APP_CONFIGMAP_NAME
-              value: {{ application_configmap }}
-            - name: APP_CONFIGMAP_KEY
-              value: {{ application_configmap_key }}
             imagePullPolicy: IfNotPresent
             name: {{ application_name }}
             ports:
@@ -92,7 +63,7 @@ items:
             livenessProbe:
               failureThreshold: 3
               httpGet:
-                path: /metrics
+                path: /health
                 port: 8080
                 scheme: HTTP
               initialDelaySeconds: 10
@@ -101,10 +72,10 @@ items:
             readinessProbe:
               failureThreshold: 3
               httpGet:
-                path: /metrics
+                path: /health
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 10
+              initialDelaySeconds: 3
               periodSeconds: 10
               timeoutSeconds: 1
             resources:
@@ -119,8 +90,8 @@ items:
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
             volumeMounts:
-            - mountPath: /deployments/config
-              name: config
+              - mountPath: /deployments/config
+                name: config
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -129,13 +100,10 @@ items:
         serviceAccountName: {{ service_account }}
         terminationGracePeriodSeconds: 30
         volumes:
-        - configMap:
-            defaultMode: 420
-            items:
-              - key: {{ application_configmap_key }}
-                path: {{ application_configmap_key }}
-            name: {{ application_configmap }}
-          name: config
+          - configMap:
+              defaultMode: 420
+              name: {{ application_configmap }}
+            name: config
     triggers:
       - type: ConfigChange
       - imageChangeParams:

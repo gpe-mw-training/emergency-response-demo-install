@@ -36,8 +36,8 @@ disaster_simulator_service_image_tag=c6818a7a8
 mission_service_image=quay.io/btison/erdemo-mission-service-quarkus
 mission_service_image_tag=d4e087b
 
-responder_simulator_image=quay.io/emergencyresponsedemo/responder-simulator
-responder_simulator_image_tag=66105af21
+responder_simulator_image=quay.io/btison/erdemo-responder-simulator-quarkus
+responder_simulator_image_tag=599c564
 
 emergency_console_image=quay.io/emergencyresponsedemo/emergency-console
 emergency_console_image_tag=1fa91c80b
