@@ -33,8 +33,8 @@ process_service_image_tag=cbfad8cf2
 disaster_simulator_service_image=quay.io/emergencyresponsedemo/disaster-simulator
 disaster_simulator_service_image_tag=c6818a7a8
 
-mission_service_image=quay.io/emergencyresponsedemo/mission-service
-mission_service_image_tag=803e6420f
+mission_service_image=quay.io/btison/erdemo-mission-service-quarkus
+mission_service_image_tag=b620eae
 
 responder_simulator_image=quay.io/emergencyresponsedemo/responder-simulator
 responder_simulator_image_tag=66105af21
