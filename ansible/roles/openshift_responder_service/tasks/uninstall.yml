@@ -60,7 +60,7 @@
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
-    name: "{{ application_name }}"
+    name: "{{ application_configmap }}"
     namespace: "{{ namespace }}"
     kind: configmap
 

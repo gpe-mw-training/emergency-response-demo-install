@@ -18,8 +18,8 @@ install_tools=true
 incident_service_image=quay.io/btison/erdemo-incident-service-quarkus
 incident_service_image_tag=6bd25b3
 
-responder_service_image=quay.io/emergencyresponsedemo/responder-service
-responder_service_image_tag=4ca7b4bab
+responder_service_image=quay.io/btison/erdemo-responder-service-quarkus
+responder_service_image_tag=90d9467
 
 process_viewer_image=quay.io/emergencyresponsedemo/process-viewer
 process_viewer_image_tag=8eac584e7

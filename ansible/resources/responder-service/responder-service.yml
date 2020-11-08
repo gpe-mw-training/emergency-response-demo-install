@@ -8,7 +8,6 @@ items:
     labels:
       app: {{ application_name }}
       expose: "true"
-      monitoring: prometheus-actuator
     name: {{ application_name }}
   spec:
     ports:
@@ -80,20 +79,20 @@ items:
             livenessProbe:
               failureThreshold: 3
               httpGet:
-                path: /actuator/health
+                path: /health/live
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 30
+              initialDelaySeconds: 10
               periodSeconds: 30
               timeoutSeconds: 3
             readinessProbe:
               failureThreshold: 3
               httpGet:
-                path: /actuator/health
+                path: /health/ready
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 30
-              periodSeconds: 30
+              initialDelaySeconds: 3
+              periodSeconds: 10
               timeoutSeconds: 3
             resources:
               limits:
@@ -107,8 +106,8 @@ items:
             terminationMessagePath: /dev/termination-log
             terminationMessagePolicy: File
             volumeMounts:
-              - mountPath: /app/logging
-                name: logging
+              - mountPath: /deployments/config
+                name: config
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -119,8 +118,8 @@ items:
         volumes:
           - configMap:
               defaultMode: 420
-              name: {{ logging_configmap }}
-            name: logging
+              name: {{ application_configmap }}
+            name: config
     triggers:
       - type: ConfigChange
       - imageChangeParams:
