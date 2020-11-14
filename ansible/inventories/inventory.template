@@ -16,7 +16,7 @@ install_tools=true
 
 # images
 incident_service_image=quay.io/btison/erdemo-incident-service-quarkus
-incident_service_image_tag=6bd25b3
+incident_service_image_tag=50149de
 
 responder_service_image=quay.io/btison/erdemo-responder-service-quarkus
 responder_service_image_tag=90d9467
