@@ -4,9 +4,9 @@ application_name: "{{ responder_simulator_service_application_name }}"
 
 service_account: responder-simulator-service
 
-resources_limits_cpu: 500m
+resources_limits_cpu: 200m
 resources_limits_memory: 500Mi
-resources_requests_cpu: 200m
+resources_requests_cpu: 100m
 resources_requests_memory: 250Mi
 
 application_configmap: responder-simulator

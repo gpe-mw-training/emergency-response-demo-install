@@ -5,7 +5,7 @@ application_name: "{{ process_service_application_name }}"
 application_configmap: process-service
 logging_configmap: process-service-logging
 
-resources_limits_cpu: 1000m
+resources_limits_cpu: 512m
 resources_limits_memory: 1Gi
 resources_requests_cpu: 250m
 resources_requests_memory: 500Mi
