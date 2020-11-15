@@ -83,6 +83,7 @@ objects:
     name: "${DATABASE_SERVICE_NAME}"
     labels:
       app: ${APPLICATION_NAME}
+      app.kubernetes.io/part-of: datatier
   spec:
     strategy:
       recreateParams:
