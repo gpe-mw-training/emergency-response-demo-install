@@ -13,10 +13,10 @@ datagrid_connect_secret: dg-connect-secret
 
 number_of_replicas: "3"
 total_container_memory: 512Mi
-total_container_cpu: 1000m
+total_container_cpu: 500m
 
 container_memory_request: 512
-container_cpu_request: 500
+container_cpu_request: 250
 total_container_storage: 1
 
 datagrid_defaultchannel: 8.1.x
