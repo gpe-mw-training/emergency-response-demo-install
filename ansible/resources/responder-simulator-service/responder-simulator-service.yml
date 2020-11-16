@@ -63,7 +63,7 @@ items:
                 path: /health
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 10
+              initialDelaySeconds: 40
               periodSeconds: 10
               timeoutSeconds: 1
             readinessProbe:

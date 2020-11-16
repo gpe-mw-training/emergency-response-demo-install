@@ -90,7 +90,7 @@ items:
                 path: /
                 port: 8080
                 scheme: HTTP
-              initialDelaySeconds: 10
+              initialDelaySeconds: 20
               periodSeconds: 10
               timeoutSeconds: 1
             readinessProbe:
