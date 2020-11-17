@@ -40,7 +40,7 @@ responder_simulator_image=quay.io/btison/erdemo-responder-simulator-quarkus
 responder_simulator_image_tag=599c564
 
 emergency_console_image=quay.io/emergencyresponsedemo/emergency-console
-emergency_console_image_tag=c297a03
+emergency_console_image_tag=c7eb6e8
 
 responder_client_app_image=quay.io/emergencyresponsedemo/emergency-response-client-app
 responder_client_app_image_tag=f2394c06c
