@@ -1,0 +1,137 @@
+---
+
+- name: "Create operatorgroup in {{ namespace_amq_streams_operator }}"
+  import_role:
+    name: operatorgroup
+  vars:
+    operatorgroup_namespace: "{{ namespace_amq_streams_operator }}"
+
+- name: get packagemanifest for amq streams operator
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    kind: packagemanifest
+    namespace: openshift-marketplace
+    name: "{{ amq_streams_operator_packagemanifest }}"
+  register: r_packagemanifest_amq_streams
+
+- name: set facts for amq streams operator
+  set_fact:
+    amq_streams_operator_subscription_package_name: "{{ r_packagemanifest_amq_streams.ansible_module_results.results[0].status.packageName }}"
+    amq_streams_operator_subscription_catalog_source: "{{ r_packagemanifest_amq_streams.ansible_module_results.results[0].status.catalogSource }}"
+    amq_streams_operator_subscription_catalog_source_namespace: "{{ r_packagemanifest_amq_streams.ansible_module_results.results[0].status.catalogSourceNamespace }}"
+
+- name: "copy template for {{ amq_streams_operator_subscription_name }} subscription resource"
+  template:
+    src: "{{ resources_dir }}/cluster-operator/{{ amq_streams_subscription_template }}"
+    dest: "{{ work_dir }}/amq-streams-subscription.yml"
+  vars:
+    subscription_name: "{{  amq_streams_operator_subscription_name }}"
+    subscription_catalog_source: "{{ amq_streams_operator_subscription_catalog_source }}"
+    subscription_catalog_source_namespace: "{{ amq_streams_operator_subscription_catalog_source_namespace }}"
+    subscription_channel: "{{ amq_streams_operator_subscription_channel }}"
+    subscription_package_name: "{{ amq_streams_operator_subscription_package_name }}"
+    subscription_automatic_installplan_approval: "{{ amq_streams_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ amq_streams_subscription_starting_csv }}"
+
+- name: "create subscription for amq streams operator"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ amq_streams_operator_subscription_name }}"
+    namespace: "{{ namespace_amq_streams_operator }}"
+    kind: Subscription
+    files:
+      - "{{ work_dir }}/amq-streams-subscription.yml"
+
+- name: wait until installplan is created
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: InstallPlan
+    namespace: "{{ namespace_amq_streams_operator }}"
+  register: r_amq_streams_operator_install_plan
+  retries: 30
+  delay: 5
+  until:
+    - r_amq_streams_operator_install_plan.ansible_module_results.results | length > 0
+    - r_amq_streams_operator_install_plan | to_json | from_json | json_query(jmesquery) | length > 0
+  vars:
+    jmesquery: "ansible_module_results.results[0].items[*].spec.clusterServiceVersionNames[] | [?contains(@, 'amqstreams') == `true`]"
+
+- name: manually approve installplan
+  when: not amq_streams_operator_subscription_automatic_installplan_approval
+  block:
+  - name: set install plan name
+    set_fact:
+      amq_streams_operator_install_plan_name: "{{ r_amq_streams_operator_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+    vars:
+      query: >-
+        [?starts_with(spec.clusterServiceVersionNames[0], 'amqstreams')].metadata.name|[0]
+
+  - name: approve installplan
+    shell: |
+      {{ openshift_cli }} patch installplan {{ amq_streams_operator_install_plan_name }} --type='merge' -p '{"spec":{"approved":true}}' -n {{ namespace_amq_streams_operator }}
+
+- name: find all amq streams operator related CSVs
+  set_fact:
+    amq_streams_operator_csvs: "{{ r_amq_streams_operator_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(spec.clusterServiceVersionNames[0], 'amqstreams')].spec.clusterServiceVersionNames
+
+- name: wait until all amq streams operator CSVs are succeeded
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"    
+    kind: ClusterServiceVersion
+    name: "{{ item }}"
+    namespace: "{{ namespace_amq_streams_operator }}"
+  register: r_amq_streams_operator_csv
+  retries: 180
+  delay: 10
+  until:
+  - r_amq_streams_operator_csv.ansible_module_results.results[0].status.phase is defined
+  - r_amq_streams_operator_csv.ansible_module_results.results[0].status.phase | length > 0
+  - r_amq_streams_operator_csv.ansible_module_results.results[0].status.phase == "Succeeded"
+  loop: "{{ amq_streams_operator_csvs[0] }}"
+
+- name: wait until amq streams operator deployment is created
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: Deployment
+    namespace: "{{ namespace_amq_streams_operator }}"
+  register: r_amq_streams_operator_deployment
+  retries: 30
+  delay: 5
+  until:
+    - r_amq_streams_operator_deployment.ansible_module_results.results | length > 0
+    - r_amq_streams_operator_deployment | to_json | from_json | json_query(jmesquery) | length > 0
+  vars:
+    jmesquery: "ansible_module_results.results[0].items[*].metadata.name[] | [?starts_with(@, 'amq-streams-cluster-operator') == `true`]"
+
+- name: set amq streams operator deployment name
+  set_fact:
+    amq_streams_operator_deployment_name: "{{ r_amq_streams_operator_deployment.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(metadata.name, 'amq-streams-cluster-operator')].metadata.name|[0]
+
+- name: wait until amq streams operator is active
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"    
+    kind: Deployment
+    name: "{{ amq_streams_operator_deployment_name }}"
+    namespace: "{{ namespace_amq_streams_operator }}"
+  register: r_amq_streams_operator_deployment
+  retries: 30
+  delay: 10
+  changed_when: false
+  until:
+    - r_amq_streams_operator_deployment.ansible_module_results.results[0].status.readyReplicas is defined
+    - r_amq_streams_operator_deployment.ansible_module_results.results[0].status.replicas is defined
+    - >-
+      r_amq_streams_operator_deployment.ansible_module_results.results[0].status.readyReplicas ==
+      r_amq_streams_operator_deployment.ansible_module_results.results[0].status.replicas
