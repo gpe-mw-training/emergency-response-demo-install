@@ -1,57 +1,95 @@
 ---
 
-- name: check if datagrid operator is deployed
+- name: "Create operatorgroup in {{ namespace }}"
+  import_role:
+    name: operatorgroup
+  vars:
+    operatorgroup_namespace: "{{ namespace }}"
+
+- name: get packagemanifest for datagrid operator operator
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    kind: packagemanifest
+    namespace: openshift-marketplace
+    name: "{{ datagrid_operator_packagemanifest }}"
+  register: r_packagemanifest_datagrid
+
+- name: set facts for datagird operator
+  set_fact:
+    datagrid_operator_subscription_package_name: "{{ r_packagemanifest_datagrid.ansible_module_results.results[0].status.packageName }}"
+    datagrid_operator_subscription_catalog_source: "{{ r_packagemanifest_datagrid.ansible_module_results.results[0].status.catalogSource }}"
+    datagrid_operator_subscription_catalog_source_namespace: "{{ r_packagemanifest_datagrid.ansible_module_results.results[0].status.catalogSourceNamespace }}"
+
+- name: "copy template for {{ datagrid_operator_subscription_name }} subscription resource"
+  template:
+    src: "{{ resources_dir }}/{{ datagrid_operator_subscription_template }}"
+    dest: "{{ work_dir }}/datagrid-subscription.yml"
+  vars:
+    subscription_name: "{{ datagrid_operator_subscription_name }}"
+    subscription_catalog_source: "{{ datagrid_operator_subscription_catalog_source }}"
+    subscription_catalog_source_namespace: "{{ datagrid_operator_subscription_catalog_source_namespace }}"
+    subscription_channel: "{{ datagrid_operator_subscription_channel }}"
+    subscription_package_name: "{{ datagrid_operator_subscription_package_name }}"
+    subscription_automatic_installplan_approval: "{{ datagrid_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ datagrid_operator_subscription_starting_csv }}"
+
+- name: "Create datagrid subscription"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_operator_subscription_name }}"
+    namespace: "{{ namespace }}"
+    kind: subscription
+    files:
+      - "{{ work_dir }}/datagrid-subscription.yml"
+
+- name: wait until installplan is created
   oc_obj:
     state: list
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ datagrid_operator_name }}"
+    kind: InstallPlan
     namespace: "{{ namespace }}"
-    kind: deployment
-  register: resource_status
+  register: r_install_plan
+  retries: 30
+  delay: 5
+  until:
+    - r_install_plan.ansible_module_results.results | length > 0
+    - r_install_plan | to_json | from_json | json_query(jmesquery) | length > 0
+  vars:
+    jmesquery: "ansible_module_results.results[0].items[*].spec.clusterServiceVersionNames[] | [?contains(@, 'datagrid-operator') == `true`]"
 
-- block:
-
-  - name: "Create operatorgroup in {{ namespace }}"
-    import_role:
-      name: operatorgroup
+- name: manually approve installplan
+  when: not datagrid_operator_subscription_automatic_installplan_approval
+  block:
+  - name: set install plan name
+    set_fact:
+      datagrid_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
     vars:
-      operatorgroup_namespace: "{{ namespace }}"
+      query: >-
+        [?starts_with(spec.clusterServiceVersionNames[0], 'datagrid-operator')].metadata.name|[0]
 
-  - name: get currentCSV for default channel
-    shell: |-
-      {{ openshift_cli }} get packagemanifests {{ datagrid_operator_package_name }} -o jsonpath='{.status.channels[?(@.name == "{{ datagrid_defaultchannel }}")].currentCSV}'
-    register: datagrid_currentCSV
+  - name: approve installplan
+    shell: |
+      {{ openshift_cli }} patch installplan {{ datagrid_operator_install_plan_name }} --type='merge' -p '{"spec":{"approved":true}}' -n {{ namespace }}
 
-  - name: "copy {{ resources_dir }}/datagrid_subscription.yml"
-    template:
-      src: "{{ resources_dir }}/datagrid_subscription.yml"
-      dest: "{{ work_dir }}/datagrid-subscription.yml"
-    vars:
-      datagrid_operator_channel: "{{ datagrid_defaultchannel }}"
-      datagrid_operator_startingcsv: "{{ datagrid_currentCSV.stdout }}"
-
-  - name: "Create datagrid subscription"
-    oc_obj:
-      state: present
-      oc_binary: "{{ openshift_cli }}"
-      name: "{{ datagrid_subscription_name }}"
-      namespace: "{{ namespace }}"
-      kind: subscription
-      files:
-        - "{{ work_dir }}/datagrid-subscription.yml"
-
-  - name: "Wait until datagrid operator is active"
-    shell: "{{ openshift_cli }} get deployment {{ datagrid_operator_name }} -o template --template={{ json_template }} -n {{ namespace }}"
-    vars:
-      json_template: '\{\{.status.readyReplicas\}\}'
-    register: result
-    until: result.stdout == "1"
-    retries: 30
-    delay: 10
-    changed_when: false
-
-  when: >
-    resource_status.ansible_module_results.stderr is defined and resource_status.ansible_module_results.stderr != ""
+- name: "Wait until datagrid operator is active"
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: Deployment
+    name: "{{ datagrid_operator_deployment_name }}"
+    namespace: "{{ namespace }}"
+  register: r_datagrid_operator_deployment
+  retries: 30
+  delay: 10
+  changed_when: false
+  until:
+    - r_datagrid_operator_deployment.ansible_module_results.results[0].status.readyReplicas is defined
+    - r_datagrid_operator_deployment.ansible_module_results.results[0].status.replicas is defined
+    - >-
+      r_datagrid_operator_deployment.ansible_module_results.results[0].status.readyReplicas ==
+      r_datagrid_operator_deployment.ansible_module_results.results[0].status.replicas
 
 # deploy datagrid
 - name: check if datagrid is deployed
@@ -70,12 +108,12 @@
 - block:
 
   # set infinispan user credentials
-  - name: "copy {{ resources_dir }}/connect_secret.yml "
+  - name: "copy {{ resources_dir }}/connect_secret.yml"
     template:
       src: "{{ resources_dir }}/connect_secret.yml"
       dest: "{{ work_dir }}/connect_secret.yml"
 
-  - name: "Create infinispan secret"
+  - name: "create infinispan secret"
     oc_obj:
       state: present
       oc_binary: "{{ openshift_cli }}"
@@ -101,14 +139,18 @@
         - "{{ work_dir }}/datagrid-cr.yml"
 
   - name: "wait until infinispan statefulset has started, replicas = {{ number_of_replicas }}"
-    shell: |
-      {{ openshift_cli }} get statefulset {{ datagrid_application_name }} -o template --template={{ json_template }} -n {{ namespace }}
-    vars:
-      json_template: '\{\{.status.currentReplicas\}\}'
-    register: infinispan_set_status
-    until: infinispan_set_status.stdout == number_of_replicas
-    retries: 15
-    delay: 15 
+    oc_obj:
+      state: list
+      oc_binary: "{{ openshift_cli }}"
+      kind: statefulset
+      name: "{{ datagrid_application_name }}"
+      namespace: "{{ namespace }}"
+    register: r_datagrid_statefulset
+    retries: 30
+    delay: 10
+    until:
+      - r_datagrid_statefulset.ansible_module_results.results[0].status is defined
+      - r_datagrid_statefulset.ansible_module_results.results[0].status.currentReplicas == number_of_replicas
 
   when: >
     register_infinispan is not defined or

@@ -16,23 +16,53 @@
     namespace: "{{ namespace }}"
     kind: infinispan
 
-- name: "delete subscription {{ datagrid_subscription_name }}"
+- name: "get all install plans in {{ namespace }} namespace"
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: InstallPlan
+    namespace: "{{ namespace }}"
+  register: r_install_plan
+
+- name: set datagrid operator install plan name
+  set_fact:
+    datagrid_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(spec.clusterServiceVersionNames[0], 'datagrid-operator')].metadata.name|[0]
+
+- name: find all datagrid operator related CSVs
+  set_fact:
+    datagrid_operator_csvs: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(spec.clusterServiceVersionNames[0], 'datagrid-operator')].spec.clusterServiceVersionNames
+
+- name: delete all datagrid operator related csv
+  when: datagrid_operator_csvs | length > 0
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ datagrid_subscription_name }}"
+    kind: ClusterServiceVersion
+    name: "{{ item }}"
+    namespace: "{{ namespace }}"
+  loop: "{{ datagrid_operator_csvs[0] }}"
+
+- name: "delete subscription {{ datagrid_operator_subscription_name }}"
+  oc_obj:
+    state: absent
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ datagrid_operator_subscription_name }}"
     namespace: "{{ namespace }}"
     kind: subscription
 
-- name: get currentCSV for default channel
-  shell: |-
-    {{ openshift_cli }} get packagemanifests {{ datagrid_operator_package_name }} -o jsonpath='{.status.channels[?(@.name == "{{ datagrid_defaultchannel }}")].currentCSV}'
-  register: datagrid_currentCSV
-
-- name: "delete datagrid CSV {{ datagrid_currentCSV.stdout }} "
+- name: remove datagrid operator installplan
+  when:
+  - datagrid_operator_install_plan_name is defined
+  - datagrid_operator_install_plan_name | default("") | length > 0
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ datagrid_currentCSV.stdout }}"
+    kind: InstallPlan
     namespace: "{{ namespace }}"
-    kind: csv
+    name: "{{ datagrid_operator_install_plan_name }}"
