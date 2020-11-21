@@ -34,13 +34,13 @@ process_service_image=quay.io/emergencyresponsedemo/process-service
 process_service_image_tag=2.8
 
 disaster_simulator_service_image=quay.io/emergencyresponsedemo/disaster-simulator
-disaster_simulator_service_image_tag=2.8
+disaster_simulator_service_image_tag=f1dbe66
 
-mission_service_image=quay.io/emergencyresponsedemo/mission-service
-mission_service_image_tag=2.8
+mission_service_image=quay.io/btison/erdemo-mission-service-quarkus
+mission_service_image_tag=9cc5854
 
-responder_simulator_image=quay.io/emergencyresponsedemo/responder-simulator
-responder_simulator_image_tag=2.8
+responder_simulator_image=quay.io/btison/erdemo-responder-simulator-quarkus
+responder_simulator_image_tag=a46c14e
 
 emergency_console_image=quay.io/emergencyresponsedemo/emergency-console
 emergency_console_image_tag=2.8
