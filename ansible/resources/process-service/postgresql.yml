@@ -9,10 +9,10 @@ items:
     annotations:
       template.openshift.io/expose-uri: postgres://{.spec.clusterIP}:{.spec.ports[?(.name=="postgresql")].port}
     labels:
-      app: {{ application_name }}
+      app: {{ process_service_postgresql_service_name }}
   spec:
     ports:
-    - name: postgresql
+    - name: tcp-postgresql
       protocol: TCP
       port: 5432
       targetPort: 5432
@@ -28,7 +28,7 @@ items:
   metadata:
     name: {{ process_service_postgresql_service_name }}
     labels:
-      app: {{ application_name }}
+      app: {{ process_service_postgresql_service_name }}
   spec:
     accessModes:
     - ReadWriteOnce
@@ -40,7 +40,7 @@ items:
   metadata:
     name: {{ process_service_postgresql_service_name }}
     labels:
-      app: {{ application_name }}
+      app: {{ process_service_postgresql_service_name }}
       app.kubernetes.io/part-of: datatier
   spec:
     strategy:
@@ -76,7 +76,7 @@ items:
       metadata:
         labels:
           name: {{ process_service_postgresql_service_name }}
-          app: {{ application_name }}
+          app: {{ process_service_postgresql_service_name }}
       spec:
         containers:
         - name: postgresql
