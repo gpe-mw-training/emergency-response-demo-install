@@ -195,6 +195,7 @@
     namespace: "{{ namespace_amq_streams_operator }}"
     resources_dir: "{{ resources_base_dir }}/amq-streams"
     work_dir_name: amq-streams-operator
+  when: uninstall_cluster_resources|bool == true
 
 - name: uninstall monitoring stack
   import_role:
@@ -222,6 +223,7 @@
     oc_binary: "{{ openshift_cli }}"
     state: absent
     name: "{{ namespace_amq_streams_operator }}"
+  when: uninstall_cluster_resources|bool == true
 
 - name: uninstall sso realm
   import_role:
@@ -240,15 +242,7 @@
     namespace: "{{ namespace_sso }}"
     resources_dir: "{{ resources_base_dir }}/sso"
     work_dir_name: sso
-
-- name: uninstall knative operator
-  import_role:
-    name: knative
-    tasks_from: uninstall
-  vars:
-    namespace: "{{ namespace_knativeserving }}"
-    resources_dir: "{{ resources_base_dir }}/knative"
-    work_dir_name: knative
+  when: uninstall_cluster_resources|bool == true
 
 - name: "delete namespace {{ namespace_nexus }}"
   oc_project:

@@ -4,7 +4,7 @@
   import_role:
     name: operatorgroup
   vars:
-    operatorgroup_namespace: "{{ namespace_amq_streams_operator }}"
+    operatorgroup_namespace: ""
 
 - name: get packagemanifest for amq streams operator
   oc_obj:
