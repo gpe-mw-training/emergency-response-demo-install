@@ -12,7 +12,7 @@
   oc_obj:
     state: absent
     oc_binary: "{{ openshift_cli }}"
-    name: "{{ process_service_postgresql_service_name }}"
+    name: "{{ process_service_postgresql_credentials_secret }}"
     namespace: "{{ namespace }}"
     kind: secret
 
