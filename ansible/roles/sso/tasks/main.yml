@@ -1,89 +1,117 @@
 ---
 
-# label namespace
-- name: "label {{ namespace }} namespace"
-  oc_label:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    kind: namespace
-    name: "{{ namespace }}"
-    labels:
-      - key: integreatly-middleware-service
-        value: "true"
-      - key: monitoring-key
-        value: middleware
-
-- name: "create operator rbac"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    namespace: "{{ namespace }}"
-    kind: role
-    name: keycloak-operator
-    files:
-      - "{{ rhsso_operator_resources }}/rbac.yaml"
-
-- name: "create keycloak crd"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    kind: crd
-    name: keycloaks.aerogear.org
-    files:
-      - "{{ rhsso_operator_resources }}/crds/Keycloak_crd.yaml"
-
-- name: "create keycloak realm crd"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    kind: crd
-    name: keycloakrealms.aerogear.org
-    files:
-      - "{{ rhsso_operator_resources }}/crds/KeycloakRealm_crd.yaml"
-
-- name: "deploy keycloak operator"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: present
-    kind: deployment
-    name: keycloak-operator
-    namespace: "{{ namespace }}"
-    files:
-      - "{{ rhsso_operator_resources }}/operator.yaml"
-
-- name: "wait until operator is deployed"
-  shell: "{{ openshift_cli }} get deployment keycloak-operator -o template --template={{ json_template }} -n {{ namespace }}"
+- name: "create operatorgroup in {{ namespace }}"
+  import_role:
+    name: operatorgroup
   vars:
-    json_template: '\{\{.status.readyReplicas\}\}'
-  register: result
-  until: result.stdout == "1"
+    operatorgroup_namespace: "{{ namespace }}"
+
+- name: get packagemanifest for sso operator
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: list
+    kind: packagemanifest
+    namespace: openshift-marketplace
+    name: "{{ sso_operator_packagemanifest }}"
+  register: r_packagemanifest_sso
+
+- name: set facts for sso operator
+  set_fact:
+    sso_operator_subscription_package_name: "{{ r_packagemanifest_sso.ansible_module_results.results[0].status.packageName }}"
+    sso_operator_subscription_catalog_source: "{{ r_packagemanifest_sso.ansible_module_results.results[0].status.catalogSource }}"
+    sso_operator_subscription_catalog_source_namespace: "{{ r_packagemanifest_sso.ansible_module_results.results[0].status.catalogSourceNamespace }}"
+
+- name: "copy template for {{ sso_operator_subscription_name }} subscription resource"
+  template:
+    src: "{{ resources_dir }}/{{ sso_operator_subscription_template }}"
+    dest: "{{ work_dir }}/sso-subscription.yml"
+  vars:
+    subscription_name: "{{ sso_operator_subscription_name }}"
+    subscription_catalog_source: "{{ sso_operator_subscription_catalog_source }}"
+    subscription_catalog_source_namespace: "{{ sso_operator_subscription_catalog_source_namespace }}"
+    subscription_channel: "{{ sso_operator_subscription_channel }}"
+    subscription_package_name: "{{ sso_operator_subscription_package_name }}"
+    subscription_automatic_installplan_approval: "{{ sso_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ sso_operator_subscription_starting_csv }}"
+
+- name: "Create sso operator subscription"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ sso_operator_subscription_name }}"
+    namespace: "{{ namespace }}"
+    kind: subscription
+    files:
+      - "{{ work_dir }}/sso-subscription.yml"
+
+- name: wait until installplan is created
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: InstallPlan
+    namespace: "{{ namespace }}"
+  register: r_install_plan
+  retries: 30
+  delay: 5
+  until:
+    - r_install_plan.ansible_module_results.results | length > 0
+    - r_install_plan | to_json | from_json | json_query(jmesquery) | length > 0
+  vars:
+    jmesquery: "ansible_module_results.results[0].items[*].spec.clusterServiceVersionNames[] | [?contains(@, 'rhsso-operator') == `true`]"
+
+- name: manually approve installplan
+  when: not sso_operator_subscription_automatic_installplan_approval
+  block:
+  - name: set install plan name
+    set_fact:
+      sso_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+    vars:
+      query: >-
+        [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].metadata.name|[0]
+
+  - name: approve installplan
+    shell: |
+      {{ openshift_cli }} patch installplan {{ sso_operator_install_plan_name }} --type='merge' -p '{"spec":{"approved":true}}' -n {{ namespace }}
+
+- name: "Wait until sso operator is active"
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    kind: Deployment
+    name: "{{ sso_operator_deployment_name }}"
+    namespace: "{{ namespace }}"
+  register: r_sso_operator_deployment
   retries: 30
   delay: 10
   changed_when: false
+  until:
+    - r_sso_operator_deployment.ansible_module_results.results[0].status.readyReplicas is defined
+    - r_sso_operator_deployment.ansible_module_results.results[0].status.replicas is defined
+    - >-
+      r_sso_operator_deployment.ansible_module_results.results[0].status.readyReplicas ==
+      r_sso_operator_deployment.ansible_module_results.results[0].status.replicas
 
 - name: "copy keycloak custom resource template"
   template:
-    src: "{{ resources_dir }}/{{ rhsso_resource_template }}"
-    dest: "{{ work_dir }}/{{ rhsso_resource_template }}"
+    src: "{{ resources_dir }}/{{ keycloak_cr_template }}"
+    dest: "{{ work_dir }}/{{ keycloak_cr_template }}"
 
 - name: "create keycloak custom resource"
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: present
-    kind: Keycloak
+    kind: keycloaks.keycloak.org
     name: rhsso
     namespace: "{{ namespace }}"
     files:
-      - "{{ work_dir }}/{{ rhsso_resource_template }}"   
+      - "{{ work_dir }}/{{ keycloak_cr_template }}"
 
-- name: "wait until sso-postgresql deployment config is created"
-  shell: oc get dc sso-postgresql -n {{ namespace }}
-  register: result
-  until: result.stdout
-  retries: 50
-  delay: 1
-  failed_when: not result.stdout
-  changed_when: False
-
-- name: "patch sso-postgresql dc to use postgresql 9.6"
-  shell: oc patch dc sso-postgresql -p '{"spec":{"triggers":[{"type":"ImageChange", "imageChangeParams":{"automatic":true,"containerNames":["sso-postgresql"],"from":{"kind":"ImageStreamTag","namespace":"openshift","name":"postgresql:9.6"}}}]}}' -n {{ namespace }}  
+- name: "create keycloak route"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    kind: route
+    name: sso
+    namespace: "{{ namespace }}"
+    files:
+      - "{{ resources_dir }}/{{ keycloak_route_template }}"

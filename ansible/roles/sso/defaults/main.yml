@@ -1,10 +1,13 @@
 ---
 
-integreatly-middleware-service: true
-monitoring-key: middleware
+# rhsso operator
+sso_operator_subscription_template: subscription.yml
+sso_operator_packagemanifest: rhsso-operator
+sso_operator_deployment_name: rhsso-operator
+sso_operator_subscription_name: rhsso-operator
+sso_operator_subscription_channel: alpha
+sso_operator_subscription_automatic_installplan_approval: false
+sso_operator_subscription_starting_csv: ""
 
-rhsso_resource_template: keycloak.json
-
-rhsso_provision_immediately: true
-rhsso_plugins:
-  - keycloak-metrics-spi
+keycloak_cr_template: keycloak-cr.yml
+keycloak_route_template: keycloak-route.yml

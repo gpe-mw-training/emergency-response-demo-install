@@ -4,80 +4,58 @@
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
-    kind: Keycloak
+    kind: keycloaks.keycloak.org
     name: rhsso
     namespace: "{{ namespace }}"
 
-- name: "delete all resources"
-  shell: "oc delete all -l application=sso -n {{ namespace }}"
-
-- name: "delete pvc"
+- name: gat all installplans in {{ namespace }} namespace
   oc_obj:
+    state: list
     oc_binary: "{{ openshift_cli }}"
-    state: absent
-    kind: pvc
-    name: sso-postgresql-claim
+    kind: InstallPlan
     namespace: "{{ namespace }}"
+  register: r_install_plan
 
-- name: "delete credential-rhsso secret"
+- name: set rhsso operator install plan name
+  set_fact:
+    sso_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].metadata.name|[0]
+
+- name: find all rhsso operator related csv
+  set_fact:
+    sso_operator_csvs: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
+  vars:
+    query: >-
+      [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].spec.clusterServiceVersionNames
+
+- name: delete all rhsso operator related csv
+  when: sso_operator_csvs | length > 0
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    kind: secret
-    name: credential-rhsso
+    oc_binary: "{{ openshift_cli }}"
+    kind: ClusterServiceVersion
+    name: "{{ item }}"
     namespace: "{{ namespace }}"
+  loop: "{{ sso_operator_csvs[0] }}"
 
-- name: "delete db-credentials-rhsso secret"
+- name: "delete subscription {{ sso_operator_subscription_name }}"
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    kind: secret
-    name: db-credentials-rhsso
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ sso_operator_subscription_name }}"
     namespace: "{{ namespace }}"
+    kind: subscription
 
-- name: "delete keycloak operator"
+- name: remove sso operator installplan
+  when:
+  - sso_operator_install_plan_name is defined
+  - sso_operator_install_plan_name | default("") | length > 0
   oc_obj:
-    oc_binary: "{{ openshift_cli }}"
     state: absent
-    kind: deployment
-    name: keycloak-operator
+    oc_binary: "{{ openshift_cli }}"
+    kind: InstallPlan
     namespace: "{{ namespace }}"
-
-- name: "delete rolebinding"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    namespace: "{{ namespace }}"
-    kind: rolebinding
-    name: default-account-keycloak-operator 
-
-- name: "delete role keycloak"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    namespace: "{{ namespace }}"
-    kind: role
-    name: keycloak-operator
-
-- name: "delete keycloak crd"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    kind: crd
-    name: keycloaks.aerogear.org
-  when: uninstall_cluster_resources|bool == true
-
-- name: "delete keycloakrealm crd"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    kind: crd
-    name: keycloakrealms.aerogear.org
-  when: uninstall_cluster_resources|bool == true
-
-- name: delete project
-  oc_project:
-    oc_binary: "{{ openshift_cli }}"
-    state: absent
-    name: "{{ namespace }}"
-  when: uninstall_delete_project|bool == true
+    name: "{{ sso_operator_install_plan_name }}"
+  
