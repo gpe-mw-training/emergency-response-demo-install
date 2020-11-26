@@ -12,7 +12,7 @@ items:
       app: {{ postgresql_application_name }}
   spec:
     ports:
-    - name: postgresql
+    - name: tcp-postgresql
       protocol: TCP
       port: 5432
       targetPort: 5432
