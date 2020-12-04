@@ -57,7 +57,7 @@
     - r_install_plan.ansible_module_results.results | length > 0
     - r_install_plan | to_json | from_json | json_query(jmesquery) | length > 0
   vars:
-    jmesquery: "ansible_module_results.results[0].items[*].spec.clusterServiceVersionNames[] | [?contains(@, 'rhsso-operator') == `true`]"
+    jmesquery: "ansible_module_results.results[0].items[*].spec.clusterServiceVersionNames[] | [?contains(@, 'keycloak-operator') == `true`]"
 
 - name: manually approve installplan
   when: not sso_operator_subscription_automatic_installplan_approval
@@ -67,7 +67,7 @@
       sso_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
     vars:
       query: >-
-        [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].metadata.name|[0]
+        [?starts_with(spec.clusterServiceVersionNames[0], 'keycloak-operator')].metadata.name|[0]
 
   - name: approve installplan
     shell: |

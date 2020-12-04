@@ -21,14 +21,14 @@
     sso_operator_install_plan_name: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
   vars:
     query: >-
-      [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].metadata.name|[0]
+      [?starts_with(spec.clusterServiceVersionNames[0], 'keycloak-operator')].metadata.name|[0]
 
 - name: find all rhsso operator related csv
   set_fact:
     sso_operator_csvs: "{{ r_install_plan.ansible_module_results.results[0]['items'] | to_json | from_json | json_query(query) }}"
   vars:
     query: >-
-      [?starts_with(spec.clusterServiceVersionNames[0], 'rhsso-operator')].spec.clusterServiceVersionNames
+      [?starts_with(spec.clusterServiceVersionNames[0], 'keycloak-operator')].spec.clusterServiceVersionNames
 
 - name: delete all rhsso operator related csv
   when: sso_operator_csvs | length > 0
