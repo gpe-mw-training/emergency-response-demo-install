@@ -28,13 +28,23 @@
 - name: scale down emergency console
   shell: "{{ openshift_cli }} scale --replicas=0 dc {{ emergency_console_application_name }} -n {{ namespace_services }}"
 
-# scale down responder client app
-- name: scale down responder client app
-  shell: "{{ openshift_cli }} scale --replicas=0 dc {{ responder_client_application_name }} -n {{ namespace_services }}"
-
 # scale down process viewer
 - name: scale down process viewer
-  shell: "{{ openshift_cli }} scale --replicas=0 dc {{ process_viewer_application_name }} -n {{ namespace_services }}"  
+  shell: "{{ openshift_cli }} scale --replicas=0 dc {{ process_viewer_application_name }} -n {{ namespace_services }}"
+
+# scale down disaster service
+- name: scale down disaster service
+  shell: "{{ openshift_cli }} scale --replicas=0 dc {{ disaster_service_application_name }} -n {{ namespace_services }}"
+
+# uninstall datawarehouse service
+- name: uninstall datawarehouse service
+  import_role:
+    name: openshift_datawarehouse
+    tasks_from: uninstall
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/datawarehouse"
+    work_dir_name: datawarehouse
 
 # uninstall kafka
 - name: uninstall Kafka Connect
@@ -45,6 +55,16 @@
     namespace: "{{ namespace_kafka_cluster }}"
     resources_dir: "{{ resources_base_dir }}/kafka-connect"
     work_dir_name: kafka-connect
+
+# remove kafka connect connector
+- name: remove kafka connect connector
+  import_role:
+    name: openshift_process_service
+    tasks_from: remove_kafka_connector
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/process-service"
+    work_dir_name: process-service  
 
 - name: uninstall kafka topics
   import_role:
@@ -84,7 +104,7 @@
     work_dir_name: postgresql
 
 # uninstall postgresql process service
-- name: uninstall process service
+- name: uninstall process service postgresql
   import_role:
     name: openshift_process_service
     tasks_from: remove_postgresql
@@ -138,15 +158,6 @@
     resources_dir: "{{ resources_base_dir }}/postgresql"
     work_dir_name: postgresql
 
-# install Kafka Connect
-- name: install Kafka Connect
-  import_role:
-    name: openshift_kafka_connect
-  vars:
-    namespace: "{{ namespace_kafka_cluster }}"
-    resources_dir: "{{ resources_base_dir }}/kafka-connect"
-    work_dir_name: kafka-connect
-
 # install postgresql process service
 - name: install process service
   import_role:
@@ -156,6 +167,34 @@
     namespace: "{{ namespace_services }}"
     resources_dir: "{{ resources_base_dir }}/process-service"
     work_dir_name: process-service
+
+# install kafka connect connector
+- name: install kafka connect connector
+  import_role:
+    name: openshift_process_service
+    tasks_from: deploy_kafka_connector
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/process-service"
+    work_dir_name: process-service  
+
+# install Kafka Connect
+- name: install Kafka Connect
+  import_role:
+    name: openshift_kafka_connect
+  vars:
+    namespace: "{{ namespace_kafka_cluster }}"
+    resources_dir: "{{ resources_base_dir }}/kafka-connect"
+    work_dir_name: kafka-connect
+
+# install datawarehouse service
+- name: install datawarehouse service
+  import_role:
+    name: openshift_datawarehouse
+  vars:
+    namespace: "{{ namespace_services }}"
+    resources_dir: "{{ resources_base_dir }}/datawarehouse"
+    work_dir_name: datawarehouse
 
 # scale up process service
 - name: scale up process service
@@ -178,17 +217,17 @@
   shell: "{{ openshift_cli }} scale --replicas=1 dc {{ incident_priority_service_application_name }} -n {{ namespace_services }}"
 
 # scale up responder simulator service
-- name: scale down responder simulator service
+- name: scale up responder simulator service
   shell: "{{ openshift_cli }} scale --replicas=1 dc {{ responder_simulator_service_application_name }} -n {{ namespace_services }}"
 
-  # scale up emergency console
+# scale up emergency console
 - name: scale up emergency console
   shell: "{{ openshift_cli }} scale --replicas=1 dc {{ emergency_console_application_name }} -n {{ namespace_services }}"
 
-# scale up responder client app
-- name: scale up responder client app
-  shell: "{{ openshift_cli }} scale --replicas=1 dc {{ responder_client_application_name }} -n {{ namespace_services }}"
-
 # scale up process viewer
 - name: scale up process viewer
-  shell: "{{ openshift_cli }} scale --replicas=1 dc {{ process_viewer_application_name }} -n {{ namespace_services }}"  
+  shell: "{{ openshift_cli }} scale --replicas=1 dc {{ process_viewer_application_name }} -n {{ namespace_services }}"
+
+# scale up disaster service
+- name: scale down disaster service
+  shell: "{{ openshift_cli }} scale --replicas=1 dc {{ disaster_service_application_name }} -n {{ namespace_services }}"
