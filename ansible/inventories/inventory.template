@@ -19,7 +19,7 @@ emergency_response_theme_extension=https://github.com/Emergency-Response-Demo/em
 
 # images
 incident_service_image=quay.io/btison/erdemo-incident-service-quarkus
-incident_service_image_tag=50149de
+incident_service_image_tag=d70031a
 
 responder_service_image=quay.io/btison/erdemo-responder-service-quarkus
 responder_service_image_tag=90d9467
